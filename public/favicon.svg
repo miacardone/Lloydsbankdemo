@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Cardflo">
+  <rect width="32" height="32" rx="7" fill="#03072E" />
+  <g transform="translate(4 4)" fill="none" stroke-width="2.5" stroke-linecap="round">
+    <path d="M2 6 C 9 6, 11 12, 17 12" stroke="#6E86F2" />
+    <path d="M2 18 C 9 18, 11 12, 17 12" stroke="#6E86F2" />
+    <path d="M2 12 H 17" stroke="#00C08B" />
+  </g>
+  <circle cx="24.5" cy="16" r="3.5" fill="#FFFFFF" />
+</svg>

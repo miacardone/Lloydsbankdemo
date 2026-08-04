@@ -1,0 +1,12 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": { "source.fixAll": "explicit" },
+  "files.associations": { "*.css": "tailwindcss" },
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "'([^']*)'"],
+    ["cn\\(([^)]*)\\)", "\"([^\"]*)\""]
+  ],
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "search.exclude": { "**/dist": true, "**/node_modules": true }
+}
