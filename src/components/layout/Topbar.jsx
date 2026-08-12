@@ -74,7 +74,6 @@ export function Topbar({ onOpenMobileNav, openRiskNotices = 0 }) {
         >
           <Menu size={18} aria-hidden="true" />
         </button>
-        <p className="text-cf-nav-header uppercase text-ink-muted">{currentUser.account}</p>
       </div>
 
       <div className="flex items-center gap-1">

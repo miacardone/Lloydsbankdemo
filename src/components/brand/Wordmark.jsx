@@ -13,9 +13,9 @@ export function Wordmark({ tone = 'color', size = 'md', className }) {
   const { brand } = useBrand();
 
   const sizes = {
-    sm: { glyph: 18, text: 'text-[0.9375rem]', imageHeight: 30 },
+    sm: { glyph: 18, text: 'text-[0.9375rem]', imageHeight: 40 },
     md: { glyph: 24, text: 'text-[1.1875rem]', imageHeight: 38 },
-    lg: { glyph: 34, text: 'text-[1.75rem]', imageHeight: 64 },
+    lg: { glyph: 34, text: 'text-[1.75rem]', imageHeight: 88 },
   };
   const { glyph, text, imageHeight } = sizes[size] ?? sizes.md;
 
@@ -27,7 +27,7 @@ export function Wordmark({ tone = 'color', size = 'md', className }) {
     return (
       <span className={cn('inline-flex items-center', className)}>
         {tone === 'inverse' ? (
-          <span className="inline-flex items-center rounded-cf bg-white px-2 py-1">{img}</span>
+          <span className="inline-flex items-center rounded-cf bg-white px-1.5 py-0.5">{img}</span>
         ) : (
           img
         )}

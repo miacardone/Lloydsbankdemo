@@ -31,7 +31,7 @@ export function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-sunken p-6">
       <div className="w-full max-w-sm space-y-6 rounded-cf-lg border border-line bg-surface p-8 shadow-cf-raised">
-        <Wordmark size="lg" />
+        <Wordmark size="lg" className="w-full justify-center" />
 
         <div>
           <h2 className="font-display text-[1.75rem] leading-tight text-ink">Sign in</h2>
