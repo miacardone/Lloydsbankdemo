@@ -13,9 +13,9 @@ export function Wordmark({ tone = 'color', size = 'md', className }) {
   const { brand } = useBrand();
 
   const sizes = {
-    sm: { glyph: 18, text: 'text-[0.9375rem]', imageHeight: 22 },
-    md: { glyph: 24, text: 'text-[1.1875rem]', imageHeight: 28 },
-    lg: { glyph: 34, text: 'text-[1.75rem]', imageHeight: 40 },
+    sm: { glyph: 18, text: 'text-[0.9375rem]', imageHeight: 30 },
+    md: { glyph: 24, text: 'text-[1.1875rem]', imageHeight: 38 },
+    lg: { glyph: 34, text: 'text-[1.75rem]', imageHeight: 64 },
   };
   const { glyph, text, imageHeight } = sizes[size] ?? sizes.md;
 
