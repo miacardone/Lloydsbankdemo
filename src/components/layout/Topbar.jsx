@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, Menu, Palette, User } from 'lucide-react';
 import { useBrand } from '@/hooks/useBrand';
+import { useAuth } from '@/hooks/useAuth';
 import { features } from '@/config/features';
 import { currentUser } from '@/data/users';
 import { Glyph } from '@/components/brand/Glyph';
@@ -59,6 +60,8 @@ const itemClass =
 
 export function Topbar({ onOpenMobileNav, openRiskNotices = 0 }) {
   const { brand, brandId, brands, switchBrand } = useBrand();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4">
@@ -142,7 +145,15 @@ export function Topbar({ onOpenMobileNav, openRiskNotices = 0 }) {
                   <Bell size={15} aria-hidden="true" />
                   Support
                 </Link>
-                <button type="button" className={itemClass} role="menuitem">
+                <button
+                  type="button"
+                  className={itemClass}
+                  role="menuitem"
+                  onClick={() => {
+                    logout();
+                    navigate('/login', { replace: true });
+                  }}
+                >
                   <LogOut size={15} aria-hidden="true" />
                   Sign out
                 </button>

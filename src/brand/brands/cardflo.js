@@ -88,6 +88,8 @@ export const cardflo = {
     portalName: 'Merchant Portal',
     currency: 'GBP',
     locale: 'en-GB',
+    demoUsername: 'CardfloDemo',
+    demoPassword: 'Changeme123',
   },
 };
 

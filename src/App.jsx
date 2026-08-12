@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
+import { RequireAuth } from '@/components/layout/RequireAuth';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { features } from '@/config/features';
 
@@ -12,6 +13,7 @@ import { features } from '@/config/features';
  * so a tenant without a module cannot reach it by typing the URL.
  */
 import Dashboard from '@/pages/Dashboard';
+import Login from '@/pages/Login';
 
 const Transactions = lazy(() => import('@/pages/Transactions'));
 const Routing = lazy(() => import('@/pages/Routing'));
@@ -50,7 +52,15 @@ export function App() {
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
-        <Route element={<AppShell />}>
+        <Route path="login" element={<Login />} />
+
+        <Route
+          element={
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="chargebacks" element={<Chargebacks />} />

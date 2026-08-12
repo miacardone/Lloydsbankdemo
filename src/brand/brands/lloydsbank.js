@@ -89,6 +89,8 @@ export const lloydsbank = {
     portalName: 'Cardnet Merchant Portal',
     currency: 'GBP',
     locale: 'en-GB',
+    demoUsername: 'LloydsBankDemo',
+    demoPassword: 'Changeme123',
   },
 };
 

@@ -78,6 +78,8 @@ export const meridian = {
     portalName: 'Merchant Portal',
     currency: 'GBP',
     locale: 'en-GB',
+    demoUsername: 'MeridianDemo',
+    demoPassword: 'Changeme123',
   },
 };
 
