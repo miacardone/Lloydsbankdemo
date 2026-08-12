@@ -19,14 +19,18 @@ export function Wordmark({ tone = 'color', size = 'md', className }) {
   };
   const { glyph, text, imageHeight } = sizes[size] ?? sizes.md;
 
-  /* A real logo image only ever gets used on a light, colour-tone surface —
-     it's solid black artwork, so it would disappear on the dark nav rail
-     that `inverse`/`mono` tones are drawn on. Those tones keep falling back
-     to the drawn Glyph below. */
-  if (brand.logo?.type === 'image' && brand.logo.image && tone === 'color') {
+  /* A real logo image is solid black artwork, so on a dark (`inverse`)
+     surface it sits inside a small white chip rather than disappearing into
+     the nav rail. */
+  if (brand.logo?.type === 'image' && brand.logo.image) {
+    const img = <img src={brand.logo.image} alt={brand.name} style={{ height: imageHeight }} />;
     return (
       <span className={cn('inline-flex items-center', className)}>
-        <img src={brand.logo.image} alt={brand.name} style={{ height: imageHeight }} />
+        {tone === 'inverse' ? (
+          <span className="inline-flex items-center rounded-cf bg-white px-2 py-1">{img}</span>
+        ) : (
+          img
+        )}
         <span className="sr-only">{brand.name} home</span>
       </span>
     );
@@ -67,7 +71,11 @@ export function Monogram({ size = 32, tone = 'color', className }) {
       role="img"
       aria-label={brand.name}
     >
-      <Glyph name={brand.logo?.glyph ?? 'route'} size={size * 0.66} tone={glyphTone} />
+      {brand.logo?.type === 'image' && brand.logo.monogramImage ? (
+        <img src={brand.logo.monogramImage} alt="" style={{ height: size * 0.74 }} />
+      ) : (
+        <Glyph name={brand.logo?.glyph ?? 'route'} size={size * 0.66} tone={glyphTone} />
+      )}
     </span>
   );
 }

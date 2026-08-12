@@ -32,13 +32,14 @@ export const lloydsbank = {
 
   logo: {
     type: 'image',
-    /* The real mark, trimmed of its background tile — see Wordmark.jsx for
-       where this is (and isn't) used. */
+    /* Horse + wordmark, trimmed of its background tile — used everywhere via
+       Wordmark.jsx (wrapped in a white chip on the dark nav rail). */
     image: '/brands/lloyds-bank-mark.svg',
+    /* Horse only, square crop — used by Monogram (collapsed nav, avatars). */
+    monogramImage: '/brands/lloyds-bank-horse.svg',
     text: 'Lloyds Bank',
-    /* Fallback for dark surfaces (nav rail) where the black artwork above
-       would be invisible — an original abstract mark, not a reproduction of
-       the horse. */
+    /* Fallback if an image fails to load — an original abstract mark, not a
+       reproduction of the horse. */
     glyph: 'arch',
     monogram: 'L',
   },
