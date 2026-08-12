@@ -80,7 +80,7 @@ export function Login() {
 
       <div className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6">
-          <div className="mb-2 lg:hidden">
+          <div className="mb-2">
             <Wordmark size="lg" />
           </div>
 
@@ -127,6 +127,10 @@ export function Login() {
             </a>
             .
           </p>
+
+          {brand.content?.disclaimer ? (
+            <p className="text-[0.75rem] text-ink-subtle">{brand.content.disclaimer}</p>
+          ) : null}
         </div>
       </div>
     </div>

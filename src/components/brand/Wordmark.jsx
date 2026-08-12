@@ -13,11 +13,24 @@ export function Wordmark({ tone = 'color', size = 'md', className }) {
   const { brand } = useBrand();
 
   const sizes = {
-    sm: { glyph: 18, text: 'text-[0.9375rem]' },
-    md: { glyph: 24, text: 'text-[1.1875rem]' },
-    lg: { glyph: 34, text: 'text-[1.75rem]' },
+    sm: { glyph: 18, text: 'text-[0.9375rem]', imageHeight: 22 },
+    md: { glyph: 24, text: 'text-[1.1875rem]', imageHeight: 28 },
+    lg: { glyph: 34, text: 'text-[1.75rem]', imageHeight: 40 },
   };
-  const { glyph, text } = sizes[size] ?? sizes.md;
+  const { glyph, text, imageHeight } = sizes[size] ?? sizes.md;
+
+  /* A real logo image only ever gets used on a light, colour-tone surface —
+     it's solid black artwork, so it would disappear on the dark nav rail
+     that `inverse`/`mono` tones are drawn on. Those tones keep falling back
+     to the drawn Glyph below. */
+  if (brand.logo?.type === 'image' && brand.logo.image && tone === 'color') {
+    return (
+      <span className={cn('inline-flex items-center', className)}>
+        <img src={brand.logo.image} alt={brand.name} style={{ height: imageHeight }} />
+        <span className="sr-only">{brand.name} home</span>
+      </span>
+    );
+  }
 
   const wordColor =
     tone === 'inverse'

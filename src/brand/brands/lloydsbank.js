@@ -5,9 +5,15 @@
  * (lloydsbank.com/business/take-payments-with-cardnet), so this tenant is
  * framed as the merchant portal Cardnet customers would see.
  *
- * The palette is a derived approximation of Lloyds' public green, not the
- * official brand pack — same caveat as src/brand/brands/cardflo.js. When a
- * real brand pack lands, this file is the only one that changes.
+ * Colours are sampled from Lloyds' own logo artwork (public/brands/lloyds-
+ * bank-mark.svg) rather than derived like the other tenants — real green
+ * (#11B67A), real horse-mark black. `logo.image` points at that mark; it's
+ * only ever shown on light surfaces (see Wordmark.jsx) because the artwork
+ * is solid black and would disappear on the dark nav rail.
+ *
+ * This uses Lloyds' actual trademark, so `content.disclaimer` is rendered in
+ * the footer and on the sign-in screen, and this build is meant to sit behind
+ * Vercel Deployment Protection rather than a public, unauthenticated URL.
  *
  * Contact details are deliberately fictional: `.example` is the same reserved
  * placeholder domain used in src/brand/brands/meridian.js, and the phone
@@ -24,28 +30,31 @@ export const lloydsbank = {
   website: 'https://www.lloydsbank.com/business/take-payments-with-cardnet/online-payments.html',
 
   logo: {
-    /* Type + vector, never a bitmap — so the mark recolours with the tenant. */
-    type: 'wordmark',
+    type: 'image',
+    /* The real mark, trimmed of its background tile — see Wordmark.jsx for
+       where this is (and isn't) used. */
+    image: '/brands/lloyds-bank-mark.svg',
     text: 'Lloyds Bank',
-    /* An original abstract mark (arch + keystone) — deliberately not a
-       reproduction of Lloyds' trademarked black horse. */
+    /* Fallback for dark surfaces (nav rail) where the black artwork above
+       would be invisible — an original abstract mark, not a reproduction of
+       the horse. */
     glyph: 'arch',
     monogram: 'L',
   },
 
   colors: {
     /* --- core ramp --- */
-    brand: '#00693E', // Lloyds green — primary actions, links, active nav
-    brandDark: '#062A1B', // deep green-black — nav rail, dark surfaces
+    brand: '#00693E', // text-safe dark green derived from the mark's shading tone — primary actions, links, active nav
+    brandDark: '#03130C', // near-black — nav rail, dark surfaces (keeps the rail's white nav text legible; the real logo green is too light for that role)
     brandMedium: '#4C8F72',
     brandLight: '#A8CDB8',
     brandLightest: '#EAF4EE',
     brandContrast: '#FFFFFF',
 
-    accent: '#B89550', // muted gold — kept distinct from the green so "good news" doesn't disappear into the brand colour
-    accentSoft: '#F3EBD8',
+    accent: '#11B67A', // the actual green sampled from Lloyds' own logo artwork
+    accentSoft: '#E3F9EF',
 
-    ink: '#0F1B15',
+    ink: '#0A0F0C',
     inkMuted: '#57655D',
     inkSubtle: '#8B968E',
     inkInverse: '#FFFFFF',
@@ -53,8 +62,8 @@ export const lloydsbank = {
     surface: '#FFFFFF',
     surfaceSunken: '#F4F7F5',
     surfaceRaised: '#FFFFFF',
-    surfaceNav: '#062A1B',
-    surfaceNavActive: '#0F4530',
+    surfaceNav: '#03130C',
+    surfaceNavActive: '#0E3324',
 
     line: '#DCE7E0',
     lineStrong: '#BFD0C5',
@@ -63,11 +72,11 @@ export const lloydsbank = {
     positive: '#00693E',
     negative: '#C6362B',
     caution: '#B8862B',
-    info: '#1D6F5C',
+    info: '#00693E',
   },
 
   charts: {
-    series: ['#00693E', '#B89550', '#4C8F72', '#062A1B', '#B8862B', '#8B968E'],
+    series: ['#00693E', '#11B67A', '#4C8F72', '#03130C', '#B8862B', '#8B968E'],
     grid: '#DCE7E0',
     axis: '#8B968E',
     areaFrom: 'rgba(0, 105, 62, 0.26)',
@@ -91,6 +100,7 @@ export const lloydsbank = {
     locale: 'en-GB',
     demoUsername: 'LloydsBankDemo',
     demoPassword: 'Changeme123',
+    disclaimer: 'Unofficial demo — not affiliated with or endorsed by Lloyds Banking Group.',
   },
 };
 
