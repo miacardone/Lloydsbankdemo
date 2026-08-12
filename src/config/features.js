@@ -17,7 +17,11 @@ export const features = {
   monitoring: true,
   affiliateReporting: true,
   webhooks: true,
-  brandSwitcher: import.meta.env.VITE_SHOW_BRAND_SWITCHER !== 'false',
+  /* Hidden by default — this build is the Lloyds Bank client demo, so the
+     portal should look like it only ever belonged to them. Opt back in
+     locally with VITE_SHOW_BRAND_SWITCHER=true if you need to preview other
+     tenants. */
+  brandSwitcher: import.meta.env.VITE_SHOW_BRAND_SWITCHER === 'true',
 };
 
 export const isEnabled = (key) => (key ? features[key] !== false : true);

@@ -17,10 +17,16 @@ export const brands = {
 
 export const brandList = Object.values(brands);
 
+/**
+ * This build ships as the Lloyds Bank demo, so that's the hardcoded default —
+ * no `VITE_DEFAULT_BRAND` env var required. Still overridable by one (mainly
+ * useful for local dev, e.g. `VITE_DEFAULT_BRAND=cardflo npm run dev`), so
+ * nothing here changes for a deploy target that *can* set env vars.
+ */
 export const DEFAULT_BRAND_ID =
   import.meta.env.VITE_DEFAULT_BRAND && brands[import.meta.env.VITE_DEFAULT_BRAND]
     ? import.meta.env.VITE_DEFAULT_BRAND
-    : cardflo.id;
+    : lloydsbank.id;
 
 export function getBrand(id) {
   return brands[id] ?? brands[DEFAULT_BRAND_ID];
