@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/table/DataTable';
 import { Badge, Modal, Select, StatCard } from '@/components/ui';
 import { useTableState } from '@/hooks/useTableState';
+import { useBrand } from '@/hooks/useBrand';
 import { transactions, transactionSummary } from '@/data/transactions';
 import { ACQUIRERS, AUTH_RESULTS, PAYMENT_METHODS } from '@/data/reference';
 import {
@@ -99,6 +100,7 @@ function TransactionDetail({ transaction, onClose }) {
 }
 
 export function Transactions() {
+  const { brand } = useBrand();
   const [selected, setSelected] = useState(null);
 
   const state = useTableState(transactions, {
@@ -246,7 +248,7 @@ export function Transactions() {
         columns={columns}
         state={state}
         caption="Transactions"
-        exportName="cardflo-transactions"
+        exportName={`${brand.id}-transactions`}
         toolbar={toolbar}
         onRowClick={setSelected}
         emptyTitle="No transactions match those filters"

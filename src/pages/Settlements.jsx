@@ -6,6 +6,7 @@ import { Bars } from '@/components/charts/Charts';
 import { DataTable } from '@/components/table/DataTable';
 import { Badge, Modal, Select, StatCard } from '@/components/ui';
 import { useTableState } from '@/hooks/useTableState';
+import { useBrand } from '@/hooks/useBrand';
 import {
   SETTLEMENT_STATE_MAP,
   settlementByAcquirer,
@@ -97,6 +98,7 @@ function SettlementDetail({ settlement, onClose }) {
 }
 
 export function Settlements() {
+  const { brand } = useBrand();
   const [selected, setSelected] = useState(null);
 
   const state = useTableState(settlements, {
@@ -268,7 +270,7 @@ export function Settlements() {
         columns={columns}
         state={state}
         caption="Settlement batches"
-        exportName="cardflo-settlements"
+        exportName={`${brand.id}-settlements`}
         toolbar={toolbar}
         onRowClick={setSelected}
         emptyTitle="No settlements match those filters"

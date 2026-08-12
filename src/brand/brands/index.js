@@ -1,5 +1,6 @@
 import cardflo from './cardflo';
 import meridian from './meridian';
+import lloydsbank from './lloydsbank';
 
 /**
  * Registry of every tenant this build can render.
@@ -11,6 +12,7 @@ import meridian from './meridian';
 export const brands = {
   [cardflo.id]: cardflo,
   [meridian.id]: meridian,
+  [lloydsbank.id]: lloydsbank,
 };
 
 export const brandList = Object.values(brands);
@@ -24,4 +26,4 @@ export function getBrand(id) {
   return brands[id] ?? brands[DEFAULT_BRAND_ID];
 }
 
-export { cardflo, meridian };
+export { cardflo, meridian, lloydsbank };

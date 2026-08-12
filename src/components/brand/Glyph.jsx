@@ -43,6 +43,21 @@ const GLYPHS = {
       <path d="M3 12 H 21" fill="none" stroke={trunk} strokeWidth="2.5" strokeLinecap="round" />
     </>
   ),
+
+  /** Lloyds Bank: an arch on a baseline — stability, not a crest. */
+  arch: ({ lane, trunk, live }) => (
+    <>
+      <path
+        d="M4 20 V12 C4 6.5 7.6 3 12 3 C16.4 3 20 6.5 20 12 V20"
+        fill="none"
+        stroke={lane}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path d="M3 20 H21" fill="none" stroke={trunk} strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="2.25" fill={live} />
+    </>
+  ),
 };
 
 export function Glyph({ name = 'route', size = 24, tone = 'color', className, animated = false }) {
