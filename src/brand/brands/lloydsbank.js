@@ -11,9 +11,10 @@
  * only ever shown on light surfaces (see Wordmark.jsx) because the artwork
  * is solid black and would disappear on the dark nav rail.
  *
- * This uses Lloyds' actual trademark, so `content.disclaimer` is rendered in
- * the footer and on the sign-in screen, and this build is meant to sit behind
- * Vercel Deployment Protection rather than a public, unauthenticated URL.
+ * This uses Lloyds' actual trademark, so this build is meant to sit behind
+ * Vercel Authentication (Project Settings → Deployment Protection) rather
+ * than a public, unauthenticated URL — that's the access gate doing the
+ * work here, not an on-page disclaimer.
  *
  * Contact details are deliberately fictional: `.example` is the same reserved
  * placeholder domain used in src/brand/brands/meridian.js, and the phone
@@ -100,7 +101,6 @@ export const lloydsbank = {
     locale: 'en-GB',
     demoUsername: 'LloydsBankDemo',
     demoPassword: 'Changeme123',
-    disclaimer: 'Unofficial demo — not affiliated with or endorsed by Lloyds Banking Group.',
   },
 };
 
