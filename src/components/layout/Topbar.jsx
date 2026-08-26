@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { features } from '@/config/features';
 import { currentUser } from '@/data/users';
 import { Glyph } from '@/components/brand/Glyph';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/cn';
 
 function useOutsideClose(ref, onClose) {
@@ -66,14 +67,16 @@ export function Topbar({ onOpenMobileNav, openRiskNotices = 0 }) {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4">
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onOpenMobileNav}
-          aria-label="Open navigation"
-          className="rounded-cf p-1.5 text-ink-muted transition hover:bg-surface-sunken hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand lg:hidden"
-        >
-          <Menu size={18} aria-hidden="true" />
-        </button>
+        <Tooltip label="Open navigation" placement="bottom">
+          <button
+            type="button"
+            onClick={onOpenMobileNav}
+            aria-label="Open navigation"
+            className="rounded-cf p-1.5 text-ink-muted transition hover:bg-surface-sunken hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand lg:hidden"
+          >
+            <Menu size={18} aria-hidden="true" />
+          </button>
+        </Tooltip>
       </div>
 
       <div className="flex items-center gap-1">
@@ -106,7 +109,7 @@ export function Topbar({ onOpenMobileNav, openRiskNotices = 0 }) {
                   </button>
                 ))}
                 <p className="border-t border-line px-2.5 pb-1 pt-2 text-[0.6875rem] leading-snug text-ink-subtle">
-                  Every colour, font and logo on screen comes from the tenant file. Hide this menu
+                  Every color, font and logo on screen comes from the tenant file. Hide this menu
                   with VITE_SHOW_BRAND_SWITCHER=false.
                 </p>
               </>
@@ -114,18 +117,27 @@ export function Topbar({ onOpenMobileNav, openRiskNotices = 0 }) {
           </Menu2>
         ) : null}
 
-        <Link
-          to="/risk-notices"
-          className="relative rounded-cf p-2 text-ink-muted transition hover:bg-surface-sunken hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          aria-label={`Risk notices, ${openRiskNotices} open`}
+        <Tooltip
+          placement="bottom"
+          label={
+            openRiskNotices > 0
+              ? `${openRiskNotices} open risk notice${openRiskNotices > 1 ? 's' : ''}`
+              : 'Risk notices — nothing open'
+          }
         >
-          <Bell size={17} aria-hidden="true" />
-          {openRiskNotices > 0 ? (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[0.625rem] font-bold text-ink">
-              {openRiskNotices}
-            </span>
-          ) : null}
-        </Link>
+          <Link
+            to="/risk-notices"
+            className="relative rounded-cf p-2 text-ink-muted transition hover:bg-surface-sunken hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            aria-label={`Risk notices, ${openRiskNotices} open`}
+          >
+            <Bell size={17} aria-hidden="true" />
+            {openRiskNotices > 0 ? (
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[0.625rem] font-bold text-ink">
+                {openRiskNotices}
+              </span>
+            ) : null}
+          </Link>
+        </Tooltip>
 
         <Menu2 label={currentUser.name} icon={User}>
           {() => (

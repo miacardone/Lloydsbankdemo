@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-/** Horizontal tabs with an underline in the brand colour. */
+/** Horizontal tabs with an underline in the brand color. */
 export function Tabs({ tabs, value, onChange, className }) {
   return (
     <div className={cn('flex gap-1 border-b border-line', className)} role="tablist">

@@ -1,9 +1,9 @@
 /**
  * Pushes a brand object onto the document as CSS custom properties.
  *
- * Colours are written as space-separated RGB channels ("81 81 144") because
+ * Colors are written as space-separated RGB channels ("81 81 144") because
  * Tailwind composes them with `rgb(var(--cf-brand) / <alpha-value>)`, which is
- * what lets `bg-brand/10` work on a runtime-swapped colour.
+ * what lets `bg-brand/10` work on a runtime-swapped color.
  */
 
 const HEX = /^#?([a-f\d]{3}|[a-f\d]{6})$/i;
@@ -30,7 +30,7 @@ export function brandToCssVars(brand) {
   Object.entries(brand.colors ?? {}).forEach(([key, hex]) => {
     const channels = hexToRgbChannels(hex);
     if (channels) vars[toVarName(key)] = channels;
-    // Keep a literal copy for places that need a plain colour (SVG fills, charts).
+    // Keep a literal copy for places that need a plain color (SVG fills, charts).
     vars[`${toVarName(key)}-hex`] = hex;
   });
 

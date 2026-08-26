@@ -9,7 +9,7 @@ import {
   highChargebackBins,
   monthOverMonthChange,
 } from '@/data/chargebacks';
-import { callCentrePerformance } from '@/data/reports';
+import { callCenterPerformance } from '@/data/reports';
 import { formatMonth, formatNumber, formatPercent, formatShortDate } from '@/lib/format';
 
 const callColumns = [
@@ -61,7 +61,7 @@ const callColumns = [
 ];
 
 export function AdvancedReport() {
-  const table = useTableState(callCentrePerformance, {
+  const table = useTableState(callCenterPerformance, {
     searchKeys: ['campaign'],
     initialSort: { key: 'threatPct', direction: 'desc' },
     initialPageSize: 10,
@@ -131,18 +131,18 @@ export function AdvancedReport() {
       </div>
 
       <div className="mt-4">
-        <h2 className="mb-2 text-cf-section text-ink">Call centre performance</h2>
+        <h2 className="mb-2 text-cf-section text-ink">Call center performance</h2>
         <p className="mb-2 text-cf-body text-ink-muted">
           Campaigns where most cardholders never reached a person carry the highest threat rate.
           Total contacts across campaigns:{' '}
-          {formatNumber(callCentrePerformance.reduce((sum, row) => sum + row.liveRep + row.ivr, 0))}
+          {formatNumber(callCenterPerformance.reduce((sum, row) => sum + row.liveRep + row.ivr, 0))}
           .
         </p>
         <DataTable
           columns={callColumns}
           state={table}
-          caption="Call centre performance metrics"
-          exportName="call-centre-performance"
+          caption="Call center performance metrics"
+          exportName="call-center-performance"
           dense
         />
       </div>

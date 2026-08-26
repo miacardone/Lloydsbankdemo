@@ -26,15 +26,17 @@ import {
   formatShortDate,
 } from '@/lib/format';
 
+/* One slot per method, none repeated — the old map handed chart-2 and chart-3
+   out twice, so four slices came back in two colors. */
 const METHOD_COLORS = {
   Card: 'var(--cf-chart-1)',
   'Apple Pay': 'var(--cf-chart-2)',
   'Google Pay': 'var(--cf-chart-3)',
   PayPal: 'var(--cf-chart-4)',
-  'Open Banking': 'var(--cf-chart-5)',
-  'SEPA Direct Debit': 'var(--cf-chart-6)',
-  Klarna: 'var(--cf-chart-2)',
-  iDEAL: 'var(--cf-chart-3)',
+  'ACH Direct Debit': 'var(--cf-chart-5)',
+  Venmo: 'var(--cf-chart-6)',
+  Klarna: 'var(--cf-chart-7)',
+  Affirm: 'var(--cf-chart-8)',
 };
 
 /**

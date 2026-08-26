@@ -1,5 +1,5 @@
 /**
- * Charts read colours from CSS variables so they re-skin with the tenant.
+ * Charts read colors from CSS variables so they re-skin with the tenant.
  * Recharts needs plain strings, so we resolve the variables at render time.
  */
 export function readVar(name, fallback = '') {
@@ -8,8 +8,13 @@ export function readVar(name, fallback = '') {
   return value || fallback;
 }
 
+/* Eight slots, assigned in fixed order. Cycling past the end would repaint two
+   series the same color, so callers with more than eight categories should
+   fold the tail into an "Other" row rather than lean on the wrap. */
+export const SERIES_SLOTS = 8;
+
 export function seriesColor(index) {
-  return `var(--cf-chart-${(index % 6) + 1})`;
+  return `var(--cf-chart-${(index % SERIES_SLOTS) + 1})`;
 }
 
 export const axisProps = {

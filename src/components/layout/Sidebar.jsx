@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Wordmark, Monogram } from '@/components/brand/Wordmark';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { isEnabled } from '@/config/features';
 import { navigation } from '@/config/navigation';
 import { cn } from '@/lib/cn';
 
 /**
  * The navy rail. Dark enough to recede behind the working area, but still the
- * tenant's own colour rather than a generic near-black — which is the whole
+ * tenant's own color rather than a generic near-black — which is the whole
  * point when the same rail ships to several brands.
  */
 export function Sidebar({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobile, badges = {} }) {
@@ -51,26 +52,48 @@ export function Sidebar({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobil
             collapsed ? 'justify-center px-2' : 'justify-between px-4',
           )}
         >
-          <NavLink
-            to="/"
-            onClick={onCloseMobile}
-            className="flex items-center rounded-cf focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            {collapsed ? (
-              <Monogram size={30} tone="inverse" />
-            ) : (
-              <Wordmark tone="inverse" size="sm" />
-            )}
-          </NavLink>
-          {!collapsed ? (
+          {collapsed ? (
+            /* Collapsed, the logo is the way back out. Hunting for a chevron at
+               the foot of the rail is the thing people never find. */
             <button
               type="button"
               onClick={onToggleCollapsed}
-              aria-label="Collapse navigation"
-              className="hidden rounded-cf p-1 text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white lg:block"
+              aria-label="Expand navigation"
+              aria-expanded={false}
+              title="Expand navigation"
+              className="group relative flex items-center rounded-cf focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <PanelLeftClose size={16} aria-hidden="true" />
+              <Monogram size={30} tone="inverse" />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-cf bg-surface-nav/85 text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+              >
+                <PanelLeft size={16} />
+              </span>
             </button>
+          ) : (
+            <NavLink
+              to="/"
+              onClick={onCloseMobile}
+              className="flex items-center rounded-cf focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <Wordmark tone="inverse" size="sm" />
+            </NavLink>
+          )}
+          {!collapsed ? (
+            <Tooltip
+              label="Collapse navigation — click the logo to bring it back"
+              placement="bottom"
+            >
+              <button
+                type="button"
+                onClick={onToggleCollapsed}
+                aria-label="Collapse navigation"
+                className="hidden rounded-cf p-1 text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white lg:block"
+              >
+                <PanelLeftClose size={16} aria-hidden="true" />
+              </button>
+            </Tooltip>
           ) : null}
         </div>
 
@@ -85,30 +108,31 @@ export function Sidebar({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobil
               return (
                 <li key={item.to}>
                   <div className="flex items-stretch">
-                    <NavLink
-                      to={item.to}
-                      end={item.end}
-                      onClick={onCloseMobile}
-                      title={collapsed ? item.label : undefined}
-                      className={({ isActive }) =>
-                        cn(
-                          'group relative flex flex-1 items-center gap-3 rounded-cf px-2.5 py-2 transition',
-                          'text-cf-nav-link text-white/75',
-                          'hover:bg-white/10 hover:text-white',
-                          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white',
-                          collapsed && 'justify-center px-0',
-                          isActive && 'bg-surface-navActive text-white',
-                        )
-                      }
-                    >
-                      <Icon size={16} strokeWidth={2} className="shrink-0" aria-hidden="true" />
-                      {!collapsed ? <span className="truncate">{item.label}</span> : null}
-                      {!collapsed && badge ? (
-                        <span className="ml-auto rounded-full bg-accent px-1.5 py-px text-[0.625rem] font-bold text-ink">
-                          {badge}
-                        </span>
-                      ) : null}
-                    </NavLink>
+                    <Tooltip label={collapsed ? item.label : null} placement="bottom">
+                      <NavLink
+                        to={item.to}
+                        end={item.end}
+                        onClick={onCloseMobile}
+                        className={({ isActive }) =>
+                          cn(
+                            'group relative flex flex-1 items-center gap-3 rounded-cf px-2.5 py-2 transition',
+                            'text-cf-nav-link text-white/75',
+                            'hover:bg-white/10 hover:text-white',
+                            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white',
+                            collapsed && 'justify-center px-0',
+                            isActive && 'bg-surface-navActive text-white',
+                          )
+                        }
+                      >
+                        <Icon size={16} strokeWidth={2} className="shrink-0" aria-hidden="true" />
+                        {!collapsed ? <span className="truncate">{item.label}</span> : null}
+                        {!collapsed && badge ? (
+                          <span className="ml-auto rounded-full bg-accent px-1.5 py-px text-[0.625rem] font-bold text-ink">
+                            {badge}
+                          </span>
+                        ) : null}
+                      </NavLink>
+                    </Tooltip>
 
                     {isGroup && !collapsed ? (
                       <button
@@ -157,19 +181,6 @@ export function Sidebar({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobil
             })}
           </ul>
         </nav>
-
-        {collapsed ? (
-          <div className="hidden border-t border-white/10 p-2 lg:block">
-            <button
-              type="button"
-              onClick={onToggleCollapsed}
-              aria-label="Expand navigation"
-              className="flex w-full justify-center rounded-cf p-2 text-white/55 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-            >
-              <PanelLeft size={16} aria-hidden="true" />
-            </button>
-          </div>
-        ) : null}
       </aside>
     </>
   );

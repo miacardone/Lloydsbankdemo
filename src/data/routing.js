@@ -16,11 +16,11 @@ export const routingRules = [
   {
     id: `rule_${id(random, 8)}`,
     priority: 1,
-    name: 'UK cards, high value',
+    name: 'US cards, high value',
     enabled: true,
     conditions: [
-      { field: 'Issuer country', operator: 'is', value: 'United Kingdom' },
-      { field: 'Amount', operator: 'is above', value: '£500.00' },
+      { field: 'Issuer country', operator: 'is', value: 'United States' },
+      { field: 'Amount', operator: 'is above', value: '$500.00' },
     ],
     primary: 'aq-worldpay',
     fallbacks: ['aq-checkout', 'aq-adyen'],

@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, TrendingDown, TrendingUp } from 'lucide-react';
+import { Tooltip } from './Tooltip';
+import { glossaryHint } from '@/data/glossary';
 import { cn } from '@/lib/cn';
 
 /**
  * The KPI tile. `direction` says which way is good — a falling dispute rate is
- * a win, a falling win rate is not — so the colour never lies about the number.
+ * a win, a falling win rate is not — so the color never lies about the number.
  */
 export function StatCard({
   label,
@@ -14,8 +16,12 @@ export function StatCard({
   direction = 'up-is-good',
   icon: Icon,
   to,
+  hint,
   className,
 }) {
+  /* A tile label like "Effective rate" or "CTR" is jargon to anyone who has not
+     read the schemes' fee documentation. Say what it means on hover. */
+  const tip = hint ?? glossaryHint(label);
   const hasDelta = typeof delta === 'number' && delta !== 0;
   const rising = delta > 0;
   const good = direction === 'up-is-good' ? rising : !rising;
@@ -25,8 +31,19 @@ export function StatCard({
     <>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-cf-label uppercase text-ink-subtle">{label}</p>
-          <p className="mt-1.5 font-display text-[2rem] leading-none text-ink">{value}</p>
+          <Tooltip label={tip}>
+            <p
+              className={cn(
+                'text-cf-label uppercase text-ink-subtle',
+                tip && 'w-fit cursor-help underline decoration-dotted underline-offset-2',
+              )}
+            >
+              {label}
+            </p>
+          </Tooltip>
+          <p className="mt-1.5 font-display text-[2rem] font-semibold leading-none text-ink">
+            {value}
+          </p>
           {caption ? <p className="mt-1.5 text-[0.75rem] text-ink-subtle">{caption}</p> : null}
         </div>
         {Icon ? (

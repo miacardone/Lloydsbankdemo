@@ -32,15 +32,15 @@ Node 20 or newer.
 ## The point of the build
 
 This is a **white-label** portal. One codebase serves several tenants, so the
-rule the whole project is organised around is:
+rule the whole project is organized around is:
 
-> **No component, page or chart contains a brand colour.**
+> **No component, page or chart contains a brand color.**
 
 Everything resolves at runtime through CSS custom properties. `src/brand/applyBrand.js`
 writes the active tenant's palette onto `document.documentElement` as
 space-separated RGB channels, and `tailwind.config.js` consumes them with
 `rgb(var(--cf-brand) / <alpha-value>)`. That indirection is what lets
-`bg-brand/10` work on a colour that only exists at runtime, and it means
+`bg-brand/10` work on a color that only exists at runtime, and it means
 switching tenants never remounts the React tree.
 
 ### Adding a tenant
@@ -163,4 +163,4 @@ accounts connected" badge, so a demo build is never mistaken for production.
 
 Skip-to-content link, visible focus rings throughout, `aria-sort` on sortable
 columns, `role="switch"` toggles, screen-reader labels on icon-only controls,
-and `prefers-reduced-motion` honoured globally.
+and `prefers-reduced-motion` honored globally.

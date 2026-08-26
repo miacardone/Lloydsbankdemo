@@ -15,7 +15,7 @@ function readStoredBrandId() {
 }
 
 /**
- * Owns the active tenant. Everything downstream reads colours through CSS
+ * Owns the active tenant. Everything downstream reads colors through CSS
  * variables, so switching brands never remounts the tree.
  */
 export function BrandProvider({ children, brandId: controlledId }) {

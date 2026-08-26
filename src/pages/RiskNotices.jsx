@@ -20,8 +20,16 @@ const STATUS_LABEL = { resolved: 'Resolved', viewed: 'Viewed', new: 'New' };
 export function RiskNotices() {
   const [tab, setTab] = useState('open');
   const [selected, setSelected] = useState(null);
+  /* Local copy so resolving a notice moves it between tabs. Nothing persists —
+     a refresh puts the demo back where it started, on purpose. */
+  const [notices, setNotices] = useState(ertNotices);
 
-  const filtered = ertNotices.filter((notice) =>
+  const resolve = (id) =>
+    setNotices((current) =>
+      current.map((notice) => (notice.id === id ? { ...notice, status: 'resolved' } : notice)),
+    );
+
+  const filtered = notices.filter((notice) =>
     tab === 'all'
       ? true
       : tab === 'open'
@@ -135,12 +143,12 @@ export function RiskNotices() {
         emptyDescription="Nothing on this account needs attention right now."
       />
 
-      <NoticeDetail notice={selected} onClose={() => setSelected(null)} />
+      <NoticeDetail notice={selected} onClose={() => setSelected(null)} onResolve={resolve} />
     </>
   );
 }
 
-function NoticeDetail({ notice, onClose }) {
+function NoticeDetail({ notice, onClose, onResolve }) {
   if (!notice) return null;
 
   return (
@@ -155,7 +163,16 @@ function NoticeDetail({ notice, onClose }) {
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
-          <Button icon={Check}>Mark resolved</Button>
+          <Button
+            icon={Check}
+            disabled={notice.status === 'resolved'}
+            onClick={() => {
+              onResolve?.(notice.id);
+              onClose();
+            }}
+          >
+            {notice.status === 'resolved' ? 'Already resolved' : 'Mark resolved'}
+          </Button>
         </>
       }
     >

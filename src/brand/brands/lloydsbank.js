@@ -5,7 +5,7 @@
  * (lloydsbank.com/business/take-payments-with-cardnet), so this tenant is
  * framed as the merchant portal Cardnet customers would see.
  *
- * Colours are sampled from Lloyds' own logo artwork (public/brands/lloyds-
+ * Colors are sampled from Lloyds' own logo artwork (public/brands/lloyds-
  * bank-mark.svg) rather than derived like the other tenants — real green
  * (#11B67A), real horse-mark black. `logo.image` points at that mark; it's
  * only ever shown on light surfaces (see Wordmark.jsx) because the artwork
@@ -18,8 +18,8 @@
  *
  * Contact details are deliberately fictional: `.example` is the same reserved
  * placeholder domain used in src/brand/brands/meridian.js, and the phone
- * number sits inside Ofcom's 03069 990000–999999 block reserved for fiction
- * and drama so nothing here can be mistaken for a real Lloyds support line.
+ * number sits inside the 555-0100–555-0199 block reserved for fiction in the
+ * North American plan, so nothing here can be mistaken for a real support line.
  */
 export const lloydsbank = {
   id: 'lloydsbank',
@@ -27,7 +27,7 @@ export const lloydsbank = {
   legalName: 'Lloyds Bank plc',
   tagline: 'Take payments with Cardnet',
   supportEmail: 'support@cardnet.example',
-  supportPhone: '03069 990112',
+  supportPhone: '+1 (800) 555-0112',
   website: 'https://www.lloydsbank.com/business/take-payments-with-cardnet/online-payments.html',
 
   logo: {
@@ -78,7 +78,18 @@ export const lloydsbank = {
   },
 
   charts: {
-    series: ['#00693E', '#11B67A', '#4C8F72', '#03130C', '#B8862B', '#8B968E'],
+    /* Eight categorical slots, brand green first. Four near-greens read as one
+       color in a legend, so the tail steps out into distinct hues instead. */
+    series: [
+      '#00693E',
+      '#E07A1F',
+      '#2A78D6',
+      '#C05A93',
+      '#11B67A',
+      '#5B3FA8',
+      '#E0A800',
+      '#A94F2E',
+    ],
     grid: '#DCE7E0',
     axis: '#8B968E',
     areaFrom: 'rgba(0, 105, 62, 0.26)',
@@ -98,8 +109,8 @@ export const lloydsbank = {
 
   content: {
     portalName: 'Cardnet Merchant Portal',
-    currency: 'GBP',
-    locale: 'en-GB',
+    currency: 'USD',
+    locale: 'en-US',
     demoUsername: 'LloydsBankDemo',
     demoPassword: 'Changeme123',
   },

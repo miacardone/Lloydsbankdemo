@@ -1,6 +1,68 @@
 import { useMemo, useState } from 'react';
 
 /**
+ * Column-level conditions from the table's advanced search.
+ *
+ * `get` comes from the column definition, so a condition works on what the cell
+ * actually shows rather than on a raw field the column may not even use.
+ */
+const TEXT = (value) => String(value ?? '').toLowerCase();
+
+export const CONDITION_OPERATORS = [
+  { value: 'contains', label: 'contains', input: 'text' },
+  { value: 'notContains', label: 'does not contain', input: 'text' },
+  { value: 'is', label: 'is', input: 'text' },
+  { value: 'isNot', label: 'is not', input: 'text' },
+  { value: 'startsWith', label: 'starts with', input: 'text' },
+  { value: 'endsWith', label: 'ends with', input: 'text' },
+  { value: 'gt', label: 'is greater than', input: 'number' },
+  { value: 'lt', label: 'is less than', input: 'number' },
+  { value: 'isEmpty', label: 'is empty', input: 'none' },
+  { value: 'isNotEmpty', label: 'is not empty', input: 'none' },
+];
+
+const OPERATOR_INPUT = Object.fromEntries(
+  CONDITION_OPERATORS.map((operator) => [operator.value, operator.input]),
+);
+
+export function matchesCondition(row, condition) {
+  const { key, operator, value, get } = condition;
+  const raw = get ? get(row) : row[key];
+
+  if (operator === 'isEmpty') return raw === null || raw === undefined || String(raw).trim() === '';
+  if (operator === 'isNotEmpty')
+    return !(raw === null || raw === undefined || String(raw).trim() === '');
+
+  /* An unfinished row shouldn't hide everything while it is being typed. */
+  if (OPERATOR_INPUT[operator] !== 'none' && String(value ?? '').trim() === '') return true;
+
+  if (operator === 'gt' || operator === 'lt') {
+    const left = Number(String(raw).replace(/[^0-9.-]/g, ''));
+    const right = Number(value);
+    if (Number.isNaN(left) || Number.isNaN(right)) return false;
+    return operator === 'gt' ? left > right : left < right;
+  }
+
+  const haystack = TEXT(raw);
+  const needle = TEXT(value).trim();
+  switch (operator) {
+    case 'is':
+      return haystack === needle;
+    case 'isNot':
+      return haystack !== needle;
+    case 'notContains':
+      return !haystack.includes(needle);
+    case 'startsWith':
+      return haystack.startsWith(needle);
+    case 'endsWith':
+      return haystack.endsWith(needle);
+    case 'contains':
+    default:
+      return haystack.includes(needle);
+  }
+}
+
+/**
  * Everything a data table needs: text search, column sort, arbitrary filters and
  * pagination. Kept framework-free so swapping the mock arrays for API responses
  * only means feeding it a different `rows`.
@@ -13,6 +75,7 @@ export function useTableState(rows, options = {}) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [filters, setFilters] = useState({});
+  const [conditions, setConditions] = useState([]);
 
   const filtered = useMemo(() => {
     let result = rows;
@@ -38,10 +101,16 @@ export function useTableState(rows, options = {}) {
       );
     }
 
+    if (conditions.length) {
+      result = result.filter((row) =>
+        conditions.every((condition) => matchesCondition(row, condition)),
+      );
+    }
+
     if (filterFn) result = result.filter(filterFn);
 
     return result;
-  }, [rows, query, searchKeys, filters, filterFn]);
+  }, [rows, query, searchKeys, filters, conditions, filterFn]);
 
   const sorted = useMemo(() => {
     if (!sort?.key) return filtered;
@@ -80,6 +149,7 @@ export function useTableState(rows, options = {}) {
 
   const clearFilters = () => {
     setFilters({});
+    setConditions([]);
     setQuery('');
     setPage(1);
   };
@@ -94,6 +164,11 @@ export function useTableState(rows, options = {}) {
     toggleSort,
     filters,
     setFilter,
+    conditions,
+    setConditions: (value) => {
+      setConditions(value);
+      setPage(1);
+    },
     clearFilters,
     page: safePage,
     setPage,

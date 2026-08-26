@@ -28,7 +28,7 @@ export function ResultantKpi() {
       <ChartCard
         title="Transactions, chargebacks and ratio by month"
         height={300}
-        note="January and March ratios came from promotional volume spikes, not a change in dispute behaviour."
+        note="January and March ratios came from promotional volume spikes, not a change in dispute behavior."
       >
         <BarsWithRatio
           data={resultantKpi}

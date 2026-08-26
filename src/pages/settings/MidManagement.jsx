@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Copy, Pencil, Plus, Upload } from 'lucide-react';
+import { Copy, Download, Pencil, Plus, Upload } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/table/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import { Button, IconButton } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
+import { downloadCsv } from '@/lib/csv';
 import { useTableState } from '@/hooks/useTableState';
 import { mids } from '@/data/merchants';
 import { MERCHANTS } from '@/data/reference';
@@ -14,6 +15,31 @@ import { formatDate } from '@/lib/format';
 const STATUS_TONE = { active: 'positive', paused: 'caution', closed: 'neutral' };
 
 const ALERT_SERVICES = ['Ethoca', 'Verifi CDRN', 'Verifi Order Insight', 'RDR', 'Consumer Clarity'];
+
+/* The bulk importer's expected shape, with one filled row so the format is
+   obvious without reading documentation. */
+const TEMPLATE_COLUMNS = [
+  { key: 'mid', header: 'MID' },
+  { key: 'alias', header: 'Alias' },
+  { key: 'descriptor', header: 'Descriptor' },
+  { key: 'mcc', header: 'MCC' },
+  { key: 'caid', header: 'CAID' },
+  { key: 'processor', header: 'Processor' },
+  { key: 'serviceLevel', header: 'Service level' },
+];
+
+const downloadMidTemplate = () =>
+  downloadCsv('mid-import-template', TEMPLATE_COLUMNS, [
+    {
+      mid: '5544220001',
+      alias: 'Store #201',
+      descriptor: 'ACME*201',
+      mcc: '5812',
+      caid: '100000001',
+      processor: 'Adyen',
+      serviceLevel: 'Full service',
+    },
+  ]);
 
 export function MidManagement() {
   const [addOpen, setAddOpen] = useState(false);
@@ -154,7 +180,7 @@ export function MidManagement() {
               className="mt-3 w-full text-cf-body file:mr-3 file:rounded-cf file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-cf-body file:font-semibold file:text-brand-contrast"
             />
           </div>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" icon={Download} onClick={downloadMidTemplate}>
             Download template
           </Button>
         </div>

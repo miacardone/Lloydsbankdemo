@@ -77,7 +77,7 @@ export function ProfileSettings() {
         <div>
           <h2 className="mb-2 text-cf-section text-ink">Sign-in history</h2>
           <p className="mb-2 text-cf-body text-ink-muted">
-            If you see an address you do not recognise, change your password and tell your account
+            If you see an address you do not recognize, change your password and tell your account
             administrator.
           </p>
           <DataTable

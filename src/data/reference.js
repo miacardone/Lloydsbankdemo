@@ -22,16 +22,16 @@ export const REASON_CODES = [
     label: 'Not as described or defective',
     category: 'Not as described',
   },
-  { code: '13.7', brand: 'Visa', label: 'Cancelled merchandise', category: 'Cancelled recurring' },
+  { code: '13.7', brand: 'Visa', label: 'Canceled merchandise', category: 'Canceled recurring' },
   { code: '4853', brand: 'Mastercard', label: 'Cardholder dispute', category: 'Not as described' },
   {
     code: '4837',
     brand: 'Mastercard',
-    label: 'No cardholder authorisation',
+    label: 'No cardholder authorization',
     category: 'Fraudulent',
   },
-  { code: '4808', brand: 'Mastercard', label: 'Authorisation related', category: 'Authorisation' },
-  { code: 'A02', brand: 'Amex', label: 'No valid authorisation', category: 'Authorisation' },
+  { code: '4808', brand: 'Mastercard', label: 'Authorization related', category: 'Authorization' },
+  { code: 'A02', brand: 'Amex', label: 'No valid authorization', category: 'Authorization' },
   { code: 'C08', brand: 'Amex', label: 'Goods or services not received', category: 'Not received' },
   { code: 'UA02', brand: 'Discover', label: 'Fraud — card not present', category: 'Fraudulent' },
 ];
@@ -40,8 +40,8 @@ export const REASON_CATEGORIES = [
   'Fraudulent',
   'Not received',
   'Not as described',
-  'Authorisation',
-  'Cancelled recurring',
+  'Authorization',
+  'Canceled recurring',
 ];
 
 export const CYCLES = ['1st Cycle', 'Pre-arbitration', 'Arbitration'];
@@ -120,14 +120,14 @@ export const ERT_LEVELS = [
  * ------------------------------------------------------------------ */
 
 export const ACQUIRERS = [
-  { id: 'aq-elavon', name: 'Elavon', region: 'EU', tier: 1 },
-  { id: 'aq-worldpay', name: 'Worldpay', region: 'UK', tier: 1 },
+  { id: 'aq-elavon', name: 'Elavon', region: 'US', tier: 1 },
+  { id: 'aq-worldpay', name: 'Worldpay', region: 'US', tier: 1 },
   { id: 'aq-adyen', name: 'Adyen', region: 'EU', tier: 1 },
   { id: 'aq-checkout', name: 'Checkout.com', region: 'UK', tier: 1 },
-  { id: 'aq-nuvei', name: 'Nuvei', region: 'NA', tier: 1 },
+  { id: 'aq-nuvei', name: 'Nuvei', region: 'CA', tier: 1 },
   { id: 'aq-payvision', name: 'Payvision', region: 'EU', tier: 2 },
   { id: 'aq-emerchant', name: 'eMerchantPay', region: 'EU', tier: 2 },
-  { id: 'aq-truevo', name: 'Truevo', region: 'MENA', tier: 2 },
+  { id: 'aq-truevo', name: 'Truevo', region: 'EU', tier: 2 },
 ];
 
 export const PAYMENT_METHODS = [
@@ -135,17 +135,17 @@ export const PAYMENT_METHODS = [
   { id: 'apple-pay', label: 'Apple Pay', group: 'Wallets' },
   { id: 'google-pay', label: 'Google Pay', group: 'Wallets' },
   { id: 'paypal', label: 'PayPal', group: 'Wallets' },
-  { id: 'open-banking', label: 'Open Banking', group: 'A2A' },
-  { id: 'sepa', label: 'SEPA Direct Debit', group: 'A2A' },
+  { id: 'ach', label: 'ACH Direct Debit', group: 'A2A' },
+  { id: 'venmo', label: 'Venmo', group: 'Wallets' },
   { id: 'klarna', label: 'Klarna', group: 'BNPL' },
-  { id: 'ideal', label: 'iDEAL', group: 'A2A' },
+  { id: 'affirm', label: 'Affirm', group: 'BNPL' },
 ];
 
-export const CURRENCIES = ['GBP', 'EUR', 'USD', 'AUD', 'CAD', 'SEK'];
+export const CURRENCIES = ['USD', 'CAD', 'EUR', 'GBP', 'MXN', 'AUD'];
 
-export const REGIONS = ['UK', 'EU', 'NA', 'LATAM', 'APAC', 'MENA'];
+export const REGIONS = ['US', 'CA', 'EU', 'UK', 'LATAM', 'APAC'];
 
-/** Authorisation outcomes as the portal reports them. */
+/** Authorization outcomes as the portal reports them. */
 export const AUTH_RESULTS = [
   { value: 'approved', label: 'Approved', tone: 'positive' },
   { value: 'recovered', label: 'Recovered on retry', tone: 'positive' },
@@ -155,7 +155,7 @@ export const AUTH_RESULTS = [
 
 /** Scheme decline codes, grouped by whether a cascade is worth attempting. */
 export const DECLINE_CODES = [
-  { code: '05', label: 'Do not honour', type: 'soft', retryable: true },
+  { code: '05', label: 'Do not honor', type: 'soft', retryable: true },
   { code: '51', label: 'Insufficient funds', type: 'soft', retryable: true },
   { code: '91', label: 'Issuer unavailable', type: 'soft', retryable: true },
   { code: '61', label: 'Exceeds withdrawal limit', type: 'soft', retryable: true },

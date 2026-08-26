@@ -14,7 +14,7 @@ export const meridian = {
   legalName: 'Meridian Payments Group Ltd',
   tagline: 'Acquiring, orchestrated',
   supportEmail: 'help@meridianpay.example',
-  supportPhone: '+44 20 7946 0410',
+  supportPhone: '+1 (212) 555-0410',
   website: 'https://meridianpay.example',
 
   logo: {
@@ -56,7 +56,16 @@ export const meridian = {
   },
 
   charts: {
-    series: ['#0E7C6B', '#E4A32B', '#4FA495', '#0A2F2A', '#2E6F8E', '#8A9A94'],
+    series: [
+      '#0A8A74',
+      '#E07A1F',
+      '#2A78D6',
+      '#C05A93',
+      '#11B67A',
+      '#5B3FA8',
+      '#E0A800',
+      '#A94F2E',
+    ],
     grid: '#DFE9E5',
     axis: '#8A9A94',
     areaFrom: 'rgba(14, 124, 107, 0.24)',
@@ -76,8 +85,8 @@ export const meridian = {
 
   content: {
     portalName: 'Merchant Portal',
-    currency: 'GBP',
-    locale: 'en-GB',
+    currency: 'USD',
+    locale: 'en-US',
     demoUsername: 'MeridianDemo',
     demoPassword: 'Changeme123',
   },

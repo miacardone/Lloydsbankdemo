@@ -34,7 +34,9 @@ export function Login() {
         <Wordmark size="lg" className="w-full justify-center" />
 
         <div>
-          <h2 className="font-display text-[1.75rem] leading-tight text-ink">Sign in</h2>
+          <h2 className="font-display text-[1.75rem] font-semibold leading-tight text-ink">
+            Sign in
+          </h2>
           <p className="mt-1 text-cf-body text-ink-muted">
             Use your {brand.name} operator account to continue.
           </p>

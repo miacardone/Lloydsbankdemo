@@ -34,12 +34,12 @@ export function Monitoring() {
       value: (row) => row.complaintRisk,
     },
     {
-      key: 'fulfilmentRisk',
-      header: 'Fulfilment risk',
+      key: 'fulfillmentRisk',
+      header: 'Fulfillment risk',
       render: (row) => (
-        <Badge tone={RATING_TONE[row.fulfilmentRisk]}>{RATING_LABEL[row.fulfilmentRisk]}</Badge>
+        <Badge tone={RATING_TONE[row.fulfillmentRisk]}>{RATING_LABEL[row.fulfillmentRisk]}</Badge>
       ),
-      value: (row) => row.fulfilmentRisk,
+      value: (row) => row.fulfillmentRisk,
     },
     {
       key: 'midHealthRisk',
@@ -72,7 +72,7 @@ export function Monitoring() {
     <>
       <PageHeader
         title="Monitoring"
-        description="Complaint volume, fulfilment signals and MID health rolled into one view per merchant, per month."
+        description="Complaint volume, fulfillment signals and MID health rolled into one view per merchant, per month."
         actions={
           <>
             <Select

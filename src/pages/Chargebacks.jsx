@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, Circle, SlidersHorizontal, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/table/DataTable';
 import { Badge } from '@/components/ui/Badge';
@@ -108,9 +108,6 @@ export function Chargebacks() {
               value={table.filters.merchantId ?? 'all'}
               onChange={(event) => table.setFilter('merchantId', event.target.value)}
             />
-            <Button variant="secondary" icon={SlidersHorizontal}>
-              Advanced search
-            </Button>
           </>
         }
       />

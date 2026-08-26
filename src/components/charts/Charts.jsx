@@ -80,57 +80,100 @@ export function MultiArea({ data, xKey, keys, formatX, stacked = false }) {
 /**
  * Donut with the headline figure in the hole. The reference portal leans on this
  * shape heavily, so it earns a dedicated component.
+ *
+ * The legend is plain HTML below the ring rather than Recharts' own. Two reasons:
+ * a Recharts <Legend> steals height from the plot, which shifts the ring off the
+ * <text> in its hole and leaves the headline visibly off-center; and a wrapped
+ * row of look-alike dots is unreadable at eight slices. Naming each slice with
+ * its share is also the direct-labelling that lets lighter slots (which sit under
+ * 3:1 against white) carry identity without relying on the swatch alone.
  */
 export function DonutStat({ data, headline, subline, colors, showLegend = true }) {
+  const total = data.reduce((sum, entry) => sum + (Number(entry.value) || 0), 0);
+
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={data}
-          isAnimationActive={false}
-          dataKey="value"
-          nameKey="name"
-          innerRadius="62%"
-          outerRadius="88%"
-          paddingAngle={1.5}
-          startAngle={90}
-          endAngle={-270}
-          stroke="none"
-        >
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              isAnimationActive={false}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius="62%"
+              outerRadius="88%"
+              paddingAngle={1.5}
+              startAngle={90}
+              endAngle={-270}
+              stroke="none"
+            >
+              {data.map((entry, index) => (
+                <Cell key={entry.name} fill={colors?.[entry.name] ?? seriesColor(index)} />
+              ))}
+            </Pie>
+            <Tooltip {...tooltipProps} cursor={false} />
+            {/* Both labels hang off the same anchor as the ring, offset in their
+                own ems, so the pair stays centered in the hole at any size. */}
+            {headline ? (
+              <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dominantBaseline="central"
+                dy={subline ? '-0.28em' : '0'}
+                style={{
+                  fontFamily: 'var(--cf-font-display)',
+                  fontSize: '1.75rem',
+                  fontWeight: 600,
+                  fill: 'var(--cf-ink-hex)',
+                }}
+              >
+                {headline}
+              </text>
+            ) : null}
+            {subline ? (
+              <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dominantBaseline="central"
+                dy={headline ? '1.55em' : '0'}
+                style={{
+                  fontFamily: 'var(--cf-font-body)',
+                  fontSize: '0.75rem',
+                  fill: 'var(--cf-ink-muted-hex)',
+                }}
+              >
+                {subline}
+              </text>
+            ) : null}
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {showLegend ? (
+        <ul className="mt-1 grid shrink-0 grid-cols-2 gap-x-3 gap-y-0.5 px-3 pb-1">
           {data.map((entry, index) => (
-            <Cell key={entry.name} fill={colors?.[entry.name] ?? seriesColor(index)} />
+            <li key={entry.name} className="flex items-center gap-1.5 text-[0.6875rem] leading-4">
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ background: colors?.[entry.name] ?? seriesColor(index) }}
+              />
+              <span className="min-w-0 flex-1 truncate text-ink-muted" title={entry.name}>
+                {entry.name}
+              </span>
+              <span className="shrink-0 tabular-nums font-semibold text-ink">
+                {total ? Math.round((entry.value / total) * 100) : 0}%
+              </span>
+            </li>
           ))}
-        </Pie>
-        <Tooltip {...tooltipProps} cursor={false} />
-        {showLegend ? <Legend {...legendProps} /> : null}
-        {headline ? (
-          <text
-            x="50%"
-            y={showLegend ? '46%' : '50%'}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            style={{
-              fontFamily: 'var(--cf-font-display)',
-              fontSize: '1.9rem',
-              fill: 'var(--cf-ink-hex)',
-            }}
-          >
-            {headline}
-          </text>
-        ) : null}
-        {subline ? (
-          <text
-            x="50%"
-            y={showLegend ? '58%' : '62%'}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            style={{ fontSize: '0.75rem', fill: 'var(--cf-ink-muted-hex)' }}
-          >
-            {subline}
-          </text>
-        ) : null}
-      </PieChart>
-    </ResponsiveContainer>
+        </ul>
+      ) : null}
+    </div>
   );
 }
 
@@ -292,6 +335,7 @@ export function Gauge({ value, max = 100, label, display }) {
           style={{
             fontFamily: 'var(--cf-font-display)',
             fontSize: '1.75rem',
+            fontWeight: 600,
             fill: 'var(--cf-ink-hex)',
           }}
         >

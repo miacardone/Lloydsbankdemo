@@ -33,7 +33,7 @@ export const resultantKpi = [
   { month: '2026-07', transactions: 1190, chargebacks: 39, ratio: 3.3 },
 ];
 
-export const callCentrePerformance = [
+export const callCenterPerformance = [
   {
     campaign: 'Campaign 1',
     noCall: 170,

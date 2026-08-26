@@ -66,7 +66,7 @@ function TransactionDetail({ transaction, onClose }) {
     ['Attempts', String(transaction.attempts)],
     ['Effective rate', formatBps(transaction.effectiveBps)],
     ['Fee', formatCurrencyIn(transaction.feeAmount, transaction.currency)],
-    ['Authorisation time', formatLatency(transaction.latencyMs)],
+    ['Authorization time', formatLatency(transaction.latencyMs)],
     ['3-D Secure', transaction.threeDS ? 'Applied' : 'Frictionless'],
     ['Network token', transaction.networkToken ? 'Yes' : 'No'],
     ['Processed', formatDateTime(transaction.createdAt)],
@@ -213,7 +213,7 @@ export function Transactions() {
     <>
       <PageHeader
         title="Transactions"
-        description="Every authorisation across every acquirer, with the routing decision attached."
+        description="Every authorization across every acquirer, with the routing decision attached."
       />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

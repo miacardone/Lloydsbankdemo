@@ -8,13 +8,13 @@ const random = createRandom(2567690);
  * because that is what the screen is for.
  */
 const CONTENT = [
-  'Descriptor shows only a city and state. Cardholders cannot recognise it, which is driving avoidable disputes.',
-  'You are settling 59 days after the transaction. Anything past 72 hours risks an authorisation mismatch or a declined representment.',
+  'Descriptor shows only a city and state. Cardholders cannot recognize it, which is driving avoidable disputes.',
+  'You are settling 59 days after the transaction. Anything past 72 hours risks an authorization mismatch or a declined representment.',
   '32% of chargebacks were filed under "refund not processed". Either the refund is failing at the gateway or it is landing later than your policy promises.',
   'BIN 439995 carries the highest chargeback rate on your account at 38%. The issuer is Banktown Bank, N.A.',
   'Your support descriptor has no URL or phone number attached. Add both so issuers can route cardholders back to you.',
   'Cancellation requests are reaching support less than 72 hours before the next bill. Traffic sources are sending customers to the wrong cancellation page.',
-  '57.5% of chargebacks are categorised as cancelled recurring. This usually means cancellations are not clearing before the next billing run.',
+  '57.5% of chargebacks are categorized as canceled recurring. This usually means cancellations are not clearing before the next billing run.',
 ];
 
 function buildErt(index) {

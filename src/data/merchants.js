@@ -82,7 +82,7 @@ export const combinedMonitoring = MERCHANTS.flatMap((merchant) =>
         { value: 'medium', weight: 30 },
         { value: 'high', weight: 15 },
       ]),
-      fulfilmentRisk: weighted(random, [
+      fulfillmentRisk: weighted(random, [
         { value: 'low', weight: 60 },
         { value: 'medium', weight: 25 },
         { value: 'high', weight: 15 },

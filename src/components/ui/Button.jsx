@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { Tooltip } from './Tooltip';
 import { cn } from '@/lib/cn';
 
 const VARIANTS = {
@@ -48,23 +49,29 @@ export const Button = forwardRef(function Button(
   );
 });
 
-/** Square icon-only button — used in table row actions. */
-export function IconButton({ icon: Icon, label, className, ...rest }) {
+/**
+ * Square icon-only button — used in table row actions.
+ *
+ * An icon with no text has to say what it does on hover; `label` is both the
+ * accessible name and the tooltip, so the two can never drift apart.
+ */
+export function IconButton({ icon: Icon, label, hint, className, ...rest }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      className={cn(
-        'inline-flex h-8 w-8 items-center justify-center rounded-cf text-ink-subtle transition',
-        'hover:bg-brand-lightest hover:text-brand',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
-        className,
-      )}
-      {...rest}
-    >
-      <Icon size={16} strokeWidth={2} aria-hidden="true" />
-    </button>
+    <Tooltip label={hint ?? label}>
+      <button
+        type="button"
+        aria-label={label}
+        className={cn(
+          'inline-flex h-8 w-8 items-center justify-center rounded-cf text-ink-subtle transition',
+          'hover:bg-brand-lightest hover:text-brand',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+          className,
+        )}
+        {...rest}
+      >
+        <Icon size={16} strokeWidth={2} aria-hidden="true" />
+      </button>
+    </Tooltip>
   );
 }
 

@@ -5,8 +5,8 @@
  * because a white-label portal serves tenants in different markets. BrandProvider
  * calls `setMoneyLocale` on mount from the active brand's `content` block.
  */
-let LOCALE = 'en-GB';
-let CURRENCY = 'GBP';
+let LOCALE = 'en-US';
+let CURRENCY = 'USD';
 
 let currency;
 let compactCurrency;

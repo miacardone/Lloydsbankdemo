@@ -49,6 +49,8 @@ export default {
       fontFamily: {
         sans: ['var(--cf-font-body)', 'system-ui', 'sans-serif'],
         display: ['var(--cf-font-display)', 'system-ui', 'sans-serif'],
+        /* Codes and endpoints only — declared so it is a choice, not a default. */
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       /* The portal type ramp. Size/leading are paired so rows align across tables. */
       fontSize: {

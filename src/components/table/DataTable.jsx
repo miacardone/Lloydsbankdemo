@@ -1,13 +1,31 @@
-import { ChevronDown, ChevronUp, ChevronsUpDown, Download, Search, X } from 'lucide-react';
+import { useMemo } from 'react';
+import {
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Download,
+  GripVertical,
+  Search,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { AdvancedSearch } from './AdvancedSearch';
+import { glossaryHint } from '@/data/glossary';
+import { useReorder } from '@/hooks/useReorder';
 import { downloadCsv } from '@/lib/csv';
 import { cn } from '@/lib/cn';
 
 /**
  * The workhorse. Columns are plain objects:
- *   { key, header, align, width, sortable, render(row), value(row) }
- * `render` is for the cell, `value` is what lands in the CSV.
+ *   { key, header, align, width, sortable, filterable, render(row), value(row) }
+ * `render` is for the cell, `value` is what lands in the CSV — and what the
+ * advanced search reads, so a condition matches what the reader can see.
+ *
+ * Headers are drag-reorderable. The order is per-mount rather than persisted:
+ * a merchant rearranging columns to read one report should not silently change
+ * the layout their colleague opens tomorrow.
  */
 export function DataTable({
   columns,
@@ -23,6 +41,18 @@ export function DataTable({
 }) {
   const { rows, sort, toggleSort, query, setQuery, total, unfilteredTotal, clearFilters } = state;
   const isFiltered = total !== unfilteredTotal;
+
+  const columnKeys = useMemo(() => columns.map((column) => column.key), [columns]);
+  const { order, dragKey, target, slotProps, handleProps, moveBy } = useReorder(columnKeys, {
+    axis: 'horizontal',
+  });
+
+  /* One ordered array, used for the head, the body and the CSV alike, so an
+     export always matches what is on screen. */
+  const orderedColumns = useMemo(() => {
+    const byKey = new Map(columns.map((column) => [column.key, column]));
+    return order.map((key) => byKey.get(key)).filter(Boolean);
+  }, [columns, order]);
 
   return (
     <div className="relative overflow-hidden rounded-cf border border-line bg-surface pt-[3px] shadow-cf before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-brand">
@@ -43,6 +73,7 @@ export function DataTable({
               className="h-8 w-52 rounded-cf border border-lineStrong bg-surface pl-8 pr-3 text-cf-body text-ink placeholder:text-ink-subtle focus:border-brand focus:outline focus:outline-2 focus:outline-brand/30"
             />
           </div>
+          <AdvancedSearch columns={columns} state={state} label={caption ?? 'table'} />
           {toolbar}
           {isFiltered ? (
             <Button variant="ghost" size="sm" icon={X} onClick={clearFilters}>
@@ -56,7 +87,7 @@ export function DataTable({
             variant="secondary"
             size="sm"
             icon={Download}
-            onClick={() => downloadCsv(exportName, columns, state.allRows)}
+            onClick={() => downloadCsv(exportName, orderedColumns, state.allRows)}
           >
             Export CSV
           </Button>
@@ -68,47 +99,100 @@ export function DataTable({
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <thead>
             <tr className="border-y border-line bg-surface-sunken">
-              {columns.map((column) => {
+              {orderedColumns.map((column) => {
                 const active = sort?.key === column.key;
                 const sortable = column.sortable !== false;
+                const isTarget = target?.key === column.key && dragKey !== column.key;
+                /* `hint` on the column wins; otherwise the header is checked
+                   against the glossary so abbreviations explain themselves. */
+                const hint = column.hint ?? glossaryHint(column.header);
+                const tip = (
+                  <>
+                    {hint ? <span className="block">{hint}</span> : null}
+                    <span className={cn('block', hint && 'mt-1 text-white/70')}>
+                      {sortable ? 'Click to sort · ' : ''}Drag or Alt+← / Alt+→ to move
+                    </span>
+                  </>
+                );
                 return (
                   <th
                     key={column.key}
                     scope="col"
-                    style={{ width: column.width }}
                     aria-sort={
                       active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'
                     }
+                    {...slotProps(column.key)}
+                    {...handleProps(column.key)}
+                    /* Merged, not spread over — handleProps carries touch-action
+                       and would otherwise drop the column width. */
+                    style={{ width: column.width, ...handleProps(column.key).style }}
                     className={cn(
-                      'whitespace-nowrap px-3 py-2 text-cf-label uppercase text-ink-muted',
+                      'group relative cursor-grab whitespace-nowrap px-3 py-2 text-cf-label uppercase text-ink-muted',
+                      'active:cursor-grabbing',
                       column.align === 'right' && 'text-right',
                       column.align === 'center' && 'text-center',
+                      dragKey === column.key && 'opacity-40',
+                      isTarget &&
+                        (target.side === 'after'
+                          ? 'shadow-[inset_-2px_0_0_0_var(--cf-brand-hex)]'
+                          : 'shadow-[inset_2px_0_0_0_var(--cf-brand-hex)]'),
                     )}
                   >
-                    {sortable ? (
-                      <button
-                        type="button"
-                        onClick={() => toggleSort(column.key)}
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-[2px] transition hover:text-brand',
-                          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
-                          active && 'text-brand',
-                        )}
-                      >
-                        {column.header}
-                        {active ? (
-                          sort.direction === 'asc' ? (
-                            <ChevronUp size={12} aria-hidden="true" />
-                          ) : (
-                            <ChevronDown size={12} aria-hidden="true" />
-                          )
+                    <span
+                      className={cn(
+                        'inline-flex items-center gap-1',
+                        column.align === 'right' && 'flex-row-reverse',
+                      )}
+                    >
+                      <GripVertical
+                        size={11}
+                        aria-hidden="true"
+                        className="shrink-0 text-ink-subtle opacity-0 transition group-hover:opacity-70"
+                      />
+                      <Tooltip label={tip}>
+                        {sortable ? (
+                          <button
+                            type="button"
+                            onClick={() => toggleSort(column.key)}
+                            /* Alt+arrows are the keyboard route to the same
+                             reorder — a drag handle alone is mouse-only. */
+                            onKeyDown={(event) => {
+                              if (!event.altKey) return;
+                              if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                                event.preventDefault();
+                                moveBy(column.key, event.key === 'ArrowLeft' ? -1 : 1);
+                              }
+                            }}
+                            className={cn(
+                              'inline-flex items-center gap-1 rounded-[2px] transition hover:text-brand',
+                              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand',
+                              active && 'text-brand',
+                              hint && 'underline decoration-dotted underline-offset-2',
+                            )}
+                          >
+                            {column.header}
+                            {active ? (
+                              sort.direction === 'asc' ? (
+                                <ChevronUp size={12} aria-hidden="true" />
+                              ) : (
+                                <ChevronDown size={12} aria-hidden="true" />
+                              )
+                            ) : (
+                              <ChevronsUpDown size={12} className="opacity-40" aria-hidden="true" />
+                            )}
+                          </button>
                         ) : (
-                          <ChevronsUpDown size={12} className="opacity-40" aria-hidden="true" />
+                          <span
+                            tabIndex={0}
+                            className={cn(
+                              hint && 'cursor-help underline decoration-dotted underline-offset-2',
+                            )}
+                          >
+                            {column.header}
+                          </span>
                         )}
-                      </button>
-                    ) : (
-                      column.header
-                    )}
+                      </Tooltip>
+                    </span>
                   </th>
                 );
               })}
@@ -125,7 +209,7 @@ export function DataTable({
                   onRowClick && 'cursor-pointer',
                 )}
               >
-                {columns.map((column) => (
+                {orderedColumns.map((column) => (
                   <td
                     key={column.key}
                     className={cn(

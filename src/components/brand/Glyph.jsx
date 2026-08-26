@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn';
  *
  * Cardflo's product is one integration fanning out across many acquirers, so
  * the glyph is three lanes resolving into a single trunk. The top lane is drawn
- * in the accent colour because that is the routing decision — the acquirer the
+ * in the accent color because that is the routing decision — the acquirer the
  * transaction actually took.
  *
  * Drawn, not imported, so it inherits the active tenant's palette. A tenant
