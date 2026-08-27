@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { RequireAuth } from '@/components/layout/RequireAuth';
 import { TableSkeleton } from '@/components/ui/Skeleton';
+import { ToastProvider } from '@/components/ui/Toast';
 import { features } from '@/config/features';
 
 /**
@@ -50,62 +51,64 @@ function PageFallback() {
 
 export function App() {
   return (
-    <Suspense fallback={<PageFallback />}>
-      <Routes>
-        <Route path="login" element={<Login />} />
+    <ToastProvider>
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
+          <Route path="login" element={<Login />} />
 
-        <Route
-          element={
-            <RequireAuth>
-              <AppShell />
-            </RequireAuth>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="chargebacks" element={<Chargebacks />} />
+          <Route
+            element={
+              <RequireAuth>
+                <AppShell />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="transactions" element={<Transactions />} />
+            <Route path="chargebacks" element={<Chargebacks />} />
 
-          {features.routing ? <Route path="routing" element={<Routing />} /> : null}
-          {features.settlements ? <Route path="settlements" element={<Settlements />} /> : null}
-          {features.alerts ? <Route path="alerts" element={<Alerts />} /> : null}
-          {features.riskNotices ? <Route path="risk-notices" element={<RiskNotices />} /> : null}
-          {features.monitoring ? <Route path="monitoring" element={<Monitoring />} /> : null}
+            {features.routing ? <Route path="routing" element={<Routing />} /> : null}
+            {features.settlements ? <Route path="settlements" element={<Settlements />} /> : null}
+            {features.alerts ? <Route path="alerts" element={<Alerts />} /> : null}
+            {features.riskNotices ? <Route path="risk-notices" element={<RiskNotices />} /> : null}
+            {features.monitoring ? <Route path="monitoring" element={<Monitoring />} /> : null}
 
-          <Route path="reports">
-            <Route index element={<ReportsOverview />} />
-            <Route path="mid-health" element={<MidHealth />} />
-            <Route path="resultant-kpi" element={<ResultantKpi />} />
-            {features.affiliateReporting ? (
-              <Route path="affiliate" element={<AffiliateReport />} />
-            ) : null}
-            <Route path="advanced" element={<AdvancedReport />} />
-            {features.alerts ? <Route path="alerts" element={<AlertsReport />} /> : null}
-            {features.riskNotices ? (
-              <Route path="risk-notices" element={<RiskNoticeReports />} />
-            ) : null}
-            <Route path="month-to-date" element={<MonthToDate />} />
+            <Route path="reports">
+              <Route index element={<ReportsOverview />} />
+              <Route path="mid-health" element={<MidHealth />} />
+              <Route path="resultant-kpi" element={<ResultantKpi />} />
+              {features.affiliateReporting ? (
+                <Route path="affiliate" element={<AffiliateReport />} />
+              ) : null}
+              <Route path="advanced" element={<AdvancedReport />} />
+              {features.alerts ? <Route path="alerts" element={<AlertsReport />} /> : null}
+              {features.riskNotices ? (
+                <Route path="risk-notices" element={<RiskNoticeReports />} />
+              ) : null}
+              <Route path="month-to-date" element={<MonthToDate />} />
+            </Route>
+
+            <Route path="users" element={<UserManagement />} />
+
+            <Route path="settings">
+              <Route index element={<ProfileSettings />} />
+              <Route path="merchants" element={<MerchantSettings />} />
+              <Route path="mids" element={<MidManagement />} />
+              <Route path="notifications" element={<NotificationSettings />} />
+            </Route>
+
+            <Route path="support" element={<Support />} />
+
+            {/* Legacy paths, kept so links shared before the rename keep working. */}
+            <Route path="ert" element={<Navigate to="/risk-notices" replace />} />
+            <Route path="reports/ert" element={<Navigate to="/reports/risk-notices" replace />} />
+            <Route path="payments" element={<Navigate to="/transactions" replace />} />
+
+            <Route path="*" element={<NotFound />} />
           </Route>
-
-          <Route path="users" element={<UserManagement />} />
-
-          <Route path="settings">
-            <Route index element={<ProfileSettings />} />
-            <Route path="merchants" element={<MerchantSettings />} />
-            <Route path="mids" element={<MidManagement />} />
-            <Route path="notifications" element={<NotificationSettings />} />
-          </Route>
-
-          <Route path="support" element={<Support />} />
-
-          {/* Legacy paths, kept so links shared before the rename keep working. */}
-          <Route path="ert" element={<Navigate to="/risk-notices" replace />} />
-          <Route path="reports/ert" element={<Navigate to="/reports/risk-notices" replace />} />
-          <Route path="payments" element={<Navigate to="/transactions" replace />} />
-
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </Suspense>
+        </Routes>
+      </Suspense>
+    </ToastProvider>
   );
 }
 

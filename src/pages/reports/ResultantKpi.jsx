@@ -2,7 +2,6 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { ChartCard } from '@/components/charts/ChartCard';
 import { BarsWithRatio, Gauge, GroupedBars } from '@/components/charts/Charts';
 import { Card } from '@/components/ui/Card';
-import { Select } from '@/components/ui/Field';
 import { alertBreakdown, alertKpis, alertsVsChargebacksByMonth } from '@/data/alerts';
 import { resultantKpi } from '@/data/reports';
 import { formatMonth, formatNumber, formatPercent } from '@/lib/format';
@@ -13,16 +12,8 @@ export function ResultantKpi() {
       <PageHeader
         title="Resultant KPI"
         description="Transaction volume against dispute volume, and what alerts caught before they became chargebacks."
-        actions={
-          <>
-            <Select aria-label="BIN" className="w-32" options={['All BINs']} />
-            <Select
-              aria-label="Platform"
-              className="w-40"
-              options={['All platforms', 'Shopify', 'Custom API']}
-            />
-          </>
-        }
+        /* The BIN and platform selects that used to sit here had no dimension
+           behind them in the dataset — this report rolls up by month only. */
       />
 
       <ChartCard

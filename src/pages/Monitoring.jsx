@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Select } from '@/components/ui/Field';
 import { useTableState } from '@/hooks/useTableState';
+import { MERCHANTS } from '@/data/reference';
 import { combinedMonitoring, monitoringSummary } from '@/data/merchants';
 import { formatNumber } from '@/lib/format';
 
@@ -78,7 +79,12 @@ export function Monitoring() {
             <Select
               aria-label="Merchant account"
               className="w-52"
-              options={['All merchant accounts']}
+              options={[
+                { value: 'all', label: 'All merchant accounts' },
+                ...MERCHANTS.map((merchant) => ({ value: merchant.name, label: merchant.name })),
+              ]}
+              value={table.filters.merchantName ?? 'all'}
+              onChange={(event) => table.setFilter('merchantName', event.target.value)}
             />
             <Button
               variant="secondary"

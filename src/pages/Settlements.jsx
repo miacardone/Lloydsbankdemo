@@ -19,7 +19,7 @@ import { formatCompactCurrency, formatCurrencyIn, formatDate, formatNumber } fro
 /**
  * Batch detail.
  *
- * Gross to net, itemised. Finance teams reconcile against this, so every
+ * Gross to net, itemized. Finance teams reconcile against this, so every
  * deduction between the two numbers is on the screen rather than implied.
  */
 function SettlementDetail({ settlement, onClose }) {

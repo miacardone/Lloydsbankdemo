@@ -6,17 +6,95 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
+import { useToast } from '@/components/ui/Toast';
 import { merchantTree } from '@/data/merchants';
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
 const ALERT_SERVICES = ['Ethoca', 'Verifi CDRN', 'Verifi Order Insight', 'RDR', 'Consumer Clarity'];
 
+const BLANK_MID = {
+  mid: '',
+  affiliateId: '',
+  descriptor: '',
+  mcc: '',
+  caid: '',
+  platform: 'Shopify',
+  serviceLevel: 'Full service',
+};
+
 export function MerchantSettings() {
+  const { notify } = useToast();
+  const [tree, setTree] = useState(merchantTree);
   const [activeId, setActiveId] = useState(merchantTree[0].id);
   const [addOpen, setAddOpen] = useState(false);
+  const [draft, setDraft] = useState(BLANK_MID);
+  /* Service state is per merchant, because the whole point of this screen is
+     that a merchant's services cascade to the MIDs underneath it. */
+  const [services, setServices] = useState(() =>
+    Object.fromEntries(
+      merchantTree.map((merchant, index) => [
+        merchant.id,
+        ALERT_SERVICES.filter((_, position) => (position + index) % 2 === 0),
+      ]),
+    ),
+  );
 
-  const active = merchantTree.find((merchant) => merchant.id === activeId) ?? merchantTree[0];
+  const active = tree.find((merchant) => merchant.id === activeId) ?? tree[0];
+  const activeServices = services[active.id] ?? [];
+  const set = (patch) => setDraft((current) => ({ ...current, ...patch }));
+  const draftReady = draft.mid.trim() && draft.descriptor.trim() && draft.mcc.trim();
+
+  const toggleService = (service) => {
+    setServices((current) => {
+      const on = (current[active.id] ?? []).includes(service);
+      notify(`${service} ${on ? 'switched off' : 'switched on'} for ${active.name}.`, {
+        tone: 'info',
+      });
+      return {
+        ...current,
+        [active.id]: on
+          ? current[active.id].filter((item) => item !== service)
+          : [...(current[active.id] ?? []), service],
+      };
+    });
+  };
+
+  const addMid = () => {
+    setTree((current) =>
+      current.map((merchant) =>
+        merchant.id === active.id
+          ? {
+              ...merchant,
+              mids: [
+                {
+                  id: `${merchant.id}-mid-new-${merchant.mids.length}`,
+                  merchantId: merchant.id,
+                  merchantName: merchant.name,
+                  group: merchant.group,
+                  mid: draft.mid.trim(),
+                  alias: draft.descriptor.trim(),
+                  descriptor: draft.descriptor.trim(),
+                  mcc: draft.mcc.trim(),
+                  caid: draft.caid.trim() || '—',
+                  platform: draft.platform,
+                  processor: 'Adyen',
+                  serviceLevel: draft.serviceLevel,
+                  status: 'active',
+                  onboardedAt: '2026-08-04',
+                  alertServices: services[merchant.id] ?? ['Ethoca'],
+                  location: 'https://shop.example.com',
+                },
+                ...merchant.mids,
+              ],
+            }
+          : merchant,
+      ),
+    );
+    notify(`MID ${draft.mid.trim()} added to ${active.name}.`);
+    setDraft(BLANK_MID);
+    setAddOpen(false);
+  };
 
   return (
     <>
@@ -37,7 +115,7 @@ export function MerchantSettings() {
               Merchant accounts
             </p>
             <ul className="space-y-0.5">
-              {merchantTree.map((merchant) => (
+              {tree.map((merchant) => (
                 <li key={merchant.id}>
                   <button
                     type="button"
@@ -70,16 +148,19 @@ export function MerchantSettings() {
               description={`${active.group} · ${active.mids.length} MIDs`}
             />
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {ALERT_SERVICES.map((service, index) => (
-                <div key={service} className="rounded-cf border border-line p-3">
-                  <Toggle
-                    checked={index % 2 === 0}
-                    onChange={() => {}}
-                    label={service}
-                    description={index % 2 === 0 ? 'Active for all MIDs' : 'Not enabled'}
-                  />
-                </div>
-              ))}
+              {ALERT_SERVICES.map((service) => {
+                const on = activeServices.includes(service);
+                return (
+                  <div key={service} className="rounded-cf border border-line p-3">
+                    <Toggle
+                      checked={on}
+                      onChange={() => toggleService(service)}
+                      label={service}
+                      description={on ? 'Active for all MIDs' : 'Not enabled'}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </Card>
 
@@ -157,25 +238,59 @@ export function MerchantSettings() {
             <Button variant="secondary" onClick={() => setAddOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddOpen(false)}>Add MID</Button>
+            <Button disabled={!draftReady} onClick={addMid}>
+              Add MID
+            </Button>
           </>
         }
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          <Input label="MID" required placeholder="5544221111" />
-          <Input label="Affiliate ID" placeholder="Optional" />
-          <Input label="MID descriptor" required placeholder="ACME*STORE201" />
-          <Input label="MCC" required placeholder="5399" />
-          <Input label="CAID" placeholder="Optional" />
+          <Input
+            label="MID"
+            required
+            placeholder="5544221111"
+            value={draft.mid}
+            onChange={(event) => set({ mid: event.target.value })}
+          />
+          <Input
+            label="Affiliate ID"
+            placeholder="Optional"
+            value={draft.affiliateId}
+            onChange={(event) => set({ affiliateId: event.target.value })}
+          />
+          <Input
+            label="MID descriptor"
+            required
+            placeholder="ACME*STORE201"
+            value={draft.descriptor}
+            onChange={(event) => set({ descriptor: event.target.value })}
+          />
+          <Input
+            label="MCC"
+            required
+            placeholder="5399"
+            value={draft.mcc}
+            onChange={(event) => set({ mcc: event.target.value })}
+          />
+          <Input
+            label="CAID"
+            placeholder="Optional"
+            value={draft.caid}
+            onChange={(event) => set({ caid: event.target.value })}
+          />
           <Select
             label="Platform"
             required
             options={['Shopify', 'BigCommerce', 'Custom API', 'Recurly']}
+            value={draft.platform}
+            onChange={(event) => set({ platform: event.target.value })}
           />
           <Select
             label="Service level"
             options={['Basic service', 'Full service']}
             className="sm:col-span-2"
+            value={draft.serviceLevel}
+            onChange={(event) => set({ serviceLevel: event.target.value })}
           />
         </div>
       </Modal>

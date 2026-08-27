@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/table/DataTable';
 import { StatCard } from '@/components/ui/StatCard';
 import { Select } from '@/components/ui/Field';
 import { useTableState } from '@/hooks/useTableState';
-import { monthToDate } from '@/data/reports';
+import { monthToDateByMonth, MTD_MONTHS } from '@/data/reports';
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format';
 
 export function MonthToDate() {
-  const table = useTableState(monthToDate, {
+  const [month, setMonth] = useState(MTD_MONTHS[0].value);
+  const rows = monthToDateByMonth[month];
+
+  const table = useTableState(rows, {
     searchKeys: ['gateway', 'mid'],
     initialSort: { key: 'posted', direction: 'desc' },
     initialPageSize: 25,
@@ -51,7 +55,7 @@ export function MonthToDate() {
     { key: 'pending', header: 'Awaiting response', align: 'right', value: (row) => row.pending },
   ];
 
-  const totals = monthToDate.reduce(
+  const totals = rows.reduce(
     (acc, row) => ({
       posted: acc.posted + row.posted,
       won: acc.won + row.won,
@@ -71,7 +75,9 @@ export function MonthToDate() {
           <Select
             aria-label="Reporting month"
             className="w-44"
-            options={['August 2026', 'July 2026', 'June 2026']}
+            options={MTD_MONTHS}
+            value={month}
+            onChange={(event) => setMonth(event.target.value)}
           />
         }
       />

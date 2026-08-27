@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button, IconButton } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
+import { useToast } from '@/components/ui/Toast';
 import { downloadCsv } from '@/lib/csv';
 import { useTableState } from '@/hooks/useTableState';
 import { mids } from '@/data/merchants';
@@ -41,11 +42,84 @@ const downloadMidTemplate = () =>
     },
   ]);
 
+const BLANK_MID = {
+  merchantId: MERCHANTS[0].id,
+  mid: '',
+  alias: '',
+  descriptor: '',
+  location: '',
+  services: ALERT_SERVICES.slice(0, 2),
+};
+
 export function MidManagement() {
+  const { notify } = useToast();
+  const [rows, setRows] = useState(mids);
   const [addOpen, setAddOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [draft, setDraft] = useState(BLANK_MID);
+  const [editing, setEditing] = useState(null);
+  const [bulkMerchant, setBulkMerchant] = useState(MERCHANTS[0].id);
+  const [bulkFile, setBulkFile] = useState(null);
 
-  const table = useTableState(mids, {
+  const set = (patch) => setDraft((current) => ({ ...current, ...patch }));
+  const draftReady = draft.mid.trim() && draft.alias.trim() && draft.descriptor.trim();
+
+  const toggleService = (service) =>
+    set({
+      services: draft.services.includes(service)
+        ? draft.services.filter((item) => item !== service)
+        : [...draft.services, service],
+    });
+
+  const saveMid = () => {
+    const merchant = MERCHANTS.find((item) => item.id === draft.merchantId) ?? MERCHANTS[0];
+    setRows((current) => [
+      {
+        id: `${merchant.id}-mid-new-${current.length}`,
+        merchantId: merchant.id,
+        merchantName: merchant.name,
+        group: merchant.group,
+        mid: draft.mid.trim(),
+        alias: draft.alias.trim(),
+        descriptor: draft.descriptor.trim(),
+        mcc: '5399',
+        caid: String(100000000 + current.length),
+        platform: 'Custom API',
+        processor: 'Adyen',
+        serviceLevel: 'Full service',
+        status: 'active',
+        onboardedAt: '2026-08-04',
+        alertServices: draft.services.length ? draft.services : ['Ethoca'],
+        location: draft.location.trim() || 'https://shop.example.com',
+      },
+      ...current,
+    ]);
+    setDraft(BLANK_MID);
+    setAddOpen(false);
+    notify(`MID ${draft.mid.trim()} added to ${merchant.name}.`);
+  };
+
+  const saveEdit = () => {
+    setRows((current) =>
+      current.map((row) => (row.id === editing.id ? { ...row, ...editing } : row)),
+    );
+    notify(`MID ${editing.mid} updated.`);
+    setEditing(null);
+  };
+
+  const uploadBulk = () => {
+    const merchant = MERCHANTS.find((item) => item.id === bulkMerchant) ?? MERCHANTS[0];
+    setBulkOpen(false);
+    notify(
+      bulkFile
+        ? `${bulkFile} queued for ${merchant.name}. We will email you when the import finishes.`
+        : `Nothing to upload — choose a CSV first.`,
+      bulkFile ? {} : { tone: 'info' },
+    );
+    setBulkFile(null);
+  };
+
+  const table = useTableState(rows, {
     searchKeys: ['mid', 'alias', 'descriptor', 'merchantName', 'group'],
     initialSort: { key: 'onboardedAt', direction: 'desc' },
   });
@@ -83,11 +157,18 @@ export function MidManagement() {
       align: 'right',
       render: (row) => (
         <div className="flex justify-end gap-0.5">
-          <IconButton icon={Pencil} label={`Edit MID ${row.mid}`} />
+          <IconButton
+            icon={Pencil}
+            label={`Edit MID ${row.mid}`}
+            onClick={() => setEditing({ ...row })}
+          />
           <IconButton
             icon={Copy}
             label={`Copy MID ${row.mid}`}
-            onClick={() => navigator.clipboard?.writeText(row.mid)}
+            onClick={() => {
+              navigator.clipboard?.writeText(row.mid);
+              notify(`Copied ${row.mid} to the clipboard.`, { tone: 'info' });
+            }}
           />
         </div>
       ),
@@ -124,7 +205,9 @@ export function MidManagement() {
             <Button variant="secondary" onClick={() => setAddOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddOpen(false)}>Save MID</Button>
+            <Button disabled={!draftReady} onClick={saveMid}>
+              Save MID
+            </Button>
           </>
         }
       >
@@ -134,21 +217,114 @@ export function MidManagement() {
               label="Merchant"
               required
               options={MERCHANTS.map((merchant) => ({ value: merchant.id, label: merchant.name }))}
+              value={draft.merchantId}
+              onChange={(event) => set({ merchantId: event.target.value })}
             />
-            <Input label="MID" required placeholder="5544221111" />
-            <Input label="Alias" required placeholder="Store #201" />
-            <Input label="Descriptor" required placeholder="ACME*STORE201" />
-            <Input label="Store URL" type="url" placeholder="https://shop.example.com" />
+            <Input
+              label="MID"
+              required
+              placeholder="5544221111"
+              value={draft.mid}
+              onChange={(event) => set({ mid: event.target.value })}
+            />
+            <Input
+              label="Alias"
+              required
+              placeholder="Store #201"
+              value={draft.alias}
+              onChange={(event) => set({ alias: event.target.value })}
+            />
+            <Input
+              label="Descriptor"
+              required
+              placeholder="ACME*STORE201"
+              value={draft.descriptor}
+              onChange={(event) => set({ descriptor: event.target.value })}
+            />
+            <Input
+              label="Store URL"
+              type="url"
+              placeholder="https://shop.example.com"
+              value={draft.location}
+              onChange={(event) => set({ location: event.target.value })}
+            />
           </div>
           <div>
             <p className="mb-2 text-cf-label uppercase text-ink-muted">Alert services</p>
             <div className="space-y-2.5 rounded-cf border border-line p-3">
-              {ALERT_SERVICES.map((service, index) => (
-                <Toggle key={service} checked={index < 2} onChange={() => {}} label={service} />
+              {ALERT_SERVICES.map((service) => (
+                <Toggle
+                  key={service}
+                  checked={draft.services.includes(service)}
+                  onChange={() => toggleService(service)}
+                  label={service}
+                />
               ))}
             </div>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+        title={editing ? `Edit MID ${editing.mid}` : ''}
+        description="Changes apply to this MID only, not the merchant above it."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
+            <Button onClick={saveEdit}>Save changes</Button>
+          </>
+        }
+      >
+        {editing ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              label="Alias"
+              value={editing.alias}
+              onChange={(event) =>
+                setEditing((current) => ({ ...current, alias: event.target.value }))
+              }
+            />
+            <Input
+              label="Descriptor"
+              value={editing.descriptor}
+              onChange={(event) =>
+                setEditing((current) => ({ ...current, descriptor: event.target.value }))
+              }
+            />
+            <Input
+              label="MCC"
+              value={editing.mcc}
+              onChange={(event) =>
+                setEditing((current) => ({ ...current, mcc: event.target.value }))
+              }
+            />
+            <Select
+              label="Status"
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'paused', label: 'Paused' },
+                { value: 'closed', label: 'Closed' },
+              ]}
+              value={editing.status}
+              onChange={(event) =>
+                setEditing((current) => ({ ...current, status: event.target.value }))
+              }
+            />
+            <Select
+              label="Service level"
+              className="sm:col-span-2"
+              options={['Basic service', 'Full service']}
+              value={editing.serviceLevel}
+              onChange={(event) =>
+                setEditing((current) => ({ ...current, serviceLevel: event.target.value }))
+              }
+            />
+          </div>
+        ) : null}
       </Modal>
 
       <Modal
@@ -161,7 +337,7 @@ export function MidManagement() {
             <Button variant="secondary" onClick={() => setBulkOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setBulkOpen(false)}>Upload file</Button>
+            <Button onClick={uploadBulk}>Upload file</Button>
           </>
         }
       >
@@ -170,6 +346,8 @@ export function MidManagement() {
             label="Merchant"
             required
             options={MERCHANTS.map((merchant) => ({ value: merchant.id, label: merchant.name }))}
+            value={bulkMerchant}
+            onChange={(event) => setBulkMerchant(event.target.value)}
           />
           <div className="rounded-cf border border-dashed border-lineStrong p-6 text-center">
             <p className="text-cf-body text-ink-muted">Drop a CSV here, or choose a file.</p>
@@ -177,8 +355,12 @@ export function MidManagement() {
               type="file"
               accept=".csv"
               aria-label="MID upload file"
+              onChange={(event) => setBulkFile(event.target.files?.[0]?.name ?? null)}
               className="mt-3 w-full text-cf-body file:mr-3 file:rounded-cf file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-cf-body file:font-semibold file:text-brand-contrast"
             />
+            {bulkFile ? (
+              <p className="mt-2 text-[0.75rem] text-ink-muted">Ready to upload: {bulkFile}</p>
+            ) : null}
           </div>
           <Button variant="ghost" size="sm" icon={Download} onClick={downloadMidTemplate}>
             Download template

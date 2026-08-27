@@ -75,51 +75,61 @@ export const chargebacksByPostDate = trendSeries(random, {
   chargebacks: value,
 }));
 
-export const chargebacksByCardType = (() => {
+/* Written as functions over rows so a date-range picker can recompute them for
+   the window the reader chose; the constants underneath are the whole ledger. */
+export function cardTypeSplit(rows) {
   const counts = CARD_BRANDS.map((brand) => ({
     name: brand,
-    value: chargebacks.filter((row) => row.cardBrand === brand).length,
+    value: rows.filter((row) => row.cardBrand === brand).length,
   }));
-  const total = counts.reduce((sum, entry) => sum + entry.value, 0);
+  const total = counts.reduce((sum, entry) => sum + entry.value, 0) || 1;
   return counts
     .map((entry) => ({ ...entry, share: Math.round((entry.value / total) * 100) }))
     .sort((a, b) => b.value - a.value);
-})();
+}
 
-export const chargebacksByReasonCode = (() => {
+export const chargebacksByCardType = cardTypeSplit(chargebacks);
+
+export function reasonCodeSplit(rows) {
   const map = new Map();
-  chargebacks.forEach((row) => {
-    map.set(row.reasonCode, (map.get(row.reasonCode) ?? 0) + 1);
-  });
-  const total = chargebacks.length;
+  rows.forEach((row) => map.set(row.reasonCode, (map.get(row.reasonCode) ?? 0) + 1));
+  const total = rows.length || 1;
   return [...map.entries()]
-    .map(([code, value]) => ({
-      name: code,
-      value,
-      share: Math.round((value / total) * 100),
-    }))
+    .map(([code, value]) => ({ name: code, value, share: Math.round((value / total) * 100) }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
-})();
+}
 
-export const chargebacksByReasonCategory = (() => {
+export const chargebacksByReasonCode = reasonCodeSplit(chargebacks);
+
+export function reasonCategorySplit(rows) {
   const map = new Map();
-  chargebacks.forEach((row) => {
-    map.set(row.reasonCategory, (map.get(row.reasonCategory) ?? 0) + 1);
-  });
-  const total = chargebacks.length;
+  rows.forEach((row) => map.set(row.reasonCategory, (map.get(row.reasonCategory) ?? 0) + 1));
+  const total = rows.length || 1;
   return [...map.entries()]
     .map(([name, value]) => ({ name, value, share: Math.round((value / total) * 100) }))
     .sort((a, b) => b.value - a.value);
-})();
+}
 
-export const chargebacksByAmountBand = [
-  { band: '$1 – 25', value: 6 },
-  { band: '$25 – 50', value: 24 },
-  { band: '$50 – 100', value: 29 },
-  { band: '$100 – 200', value: 31 },
-  { band: '$200 – 1,000', value: 34 },
+export const chargebacksByReasonCategory = reasonCategorySplit(chargebacks);
+
+/** Value bands, counted from the rows rather than hard-coded. */
+const BANDS = [
+  { band: '$1 – 25', min: 0, max: 25 },
+  { band: '$25 – 50', min: 25, max: 50 },
+  { band: '$50 – 100', min: 50, max: 100 },
+  { band: '$100 – 200', min: 100, max: 200 },
+  { band: '$200 – 1,000', min: 200, max: Infinity },
 ];
+
+export function amountBandSplit(rows) {
+  return BANDS.map(({ band, min, max }) => ({
+    band,
+    value: rows.filter((row) => row.disputeAmount >= min && row.disputeAmount < max).length,
+  }));
+}
+
+export const chargebacksByAmountBand = amountBandSplit(chargebacks);
 
 export const topMidsByChargebacks = MID_ALIASES.slice(0, 5).map((alias, index) => {
   const won = between(random, 39, 415);

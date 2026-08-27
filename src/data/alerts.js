@@ -48,20 +48,35 @@ export const alertKpis = {
   refundedShare: 58,
 };
 
-export const alertsBySource = ALERT_SOURCES.map((source) => ({
-  name: source,
-  value: alerts.filter((alert) => alert.source === source).length,
-})).sort((a, b) => b.value - a.value);
+/* Functions over rows, so the report's date range can recompute them for the
+   window on screen rather than always showing the whole history. */
+export const sourceSplit = (rows) =>
+  ALERT_SOURCES.map((source) => ({
+    name: source,
+    value: rows.filter((alert) => alert.source === source).length,
+  }))
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value);
 
-export const alertsByCardType = CARD_BRANDS.map((brand) => {
-  const value = alerts.filter((alert) => alert.cardBrand === brand).length;
-  return { name: brand, value };
-}).sort((a, b) => b.value - a.value);
+export const cardTypeSplit = (rows) =>
+  CARD_BRANDS.map((brand) => ({
+    name: brand,
+    value: rows.filter((alert) => alert.cardBrand === brand).length,
+  }))
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value);
 
-export const alertsByOutcome = ALERT_OUTCOMES.map((outcome) => ({
-  name: outcome,
-  value: alerts.filter((alert) => alert.outcome === outcome).length,
-})).sort((a, b) => b.value - a.value);
+export const outcomeSplit = (rows) =>
+  ALERT_OUTCOMES.map((outcome) => ({
+    name: outcome,
+    value: rows.filter((alert) => alert.outcome === outcome).length,
+  }))
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+export const alertsBySource = sourceSplit(alerts);
+export const alertsByCardType = cardTypeSplit(alerts);
+export const alertsByOutcome = outcomeSplit(alerts);
 
 /** One line per source, 30 days — the stacked area chart on the Alerts report. */
 export const newAlertsByDate = (() => {

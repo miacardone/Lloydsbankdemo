@@ -8,6 +8,8 @@ import { Tabs } from '@/components/ui/Tabs';
 import { Select } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { Input, Textarea } from '@/components/ui/Field';
+import { useToast } from '@/components/ui/Toast';
 import { useTableState } from '@/hooks/useTableState';
 import { ertNotices } from '@/data/ert';
 import { ERT_LEVELS, ERT_TYPES } from '@/data/reference';
@@ -23,6 +25,39 @@ export function RiskNotices() {
   /* Local copy so resolving a notice moves it between tabs. Nothing persists —
      a refresh puts the demo back where it started, on purpose. */
   const [notices, setNotices] = useState(ertNotices);
+  const [commenting, setCommenting] = useState(null);
+  const [assigning, setAssigning] = useState(null);
+  const [comment, setComment] = useState('');
+  const [assignee, setAssignee] = useState('');
+  const { notify } = useToast();
+
+  const saveComment = () => {
+    setNotices((current) =>
+      current.map((notice) =>
+        notice.id === commenting.id
+          ? { ...notice, comments: [...(notice.comments ?? []), comment.trim()] }
+          : notice,
+      ),
+    );
+    notify(`Comment added to notice ${commenting.id}.`);
+    setCommenting(null);
+    setComment('');
+  };
+
+  const saveAssignee = () => {
+    setNotices((current) =>
+      current.map((notice) =>
+        notice.id === assigning.id ? { ...notice, assignee: assignee.trim() || null } : notice,
+      ),
+    );
+    notify(
+      assignee.trim()
+        ? `Notice ${assigning.id} assigned to ${assignee.trim()}.`
+        : `Notice ${assigning.id} unassigned.`,
+    );
+    setAssigning(null);
+    setAssignee('');
+  };
 
   const resolve = (id) =>
     setNotices((current) =>
@@ -93,8 +128,24 @@ export function RiskNotices() {
               setSelected(row);
             }}
           />
-          <IconButton icon={MessageSquare} label={`Comment on notice ${row.id}`} />
-          <IconButton icon={UserPlus} label={`Assign notice ${row.id}`} />
+          <IconButton
+            icon={MessageSquare}
+            label={`Comment on notice ${row.id}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              setComment('');
+              setCommenting(row);
+            }}
+          />
+          <IconButton
+            icon={UserPlus}
+            label={`Assign notice ${row.id}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              setAssignee(row.assignee ?? '');
+              setAssigning(row);
+            }}
+          />
         </div>
       ),
       value: () => '',
@@ -144,6 +195,56 @@ export function RiskNotices() {
       />
 
       <NoticeDetail notice={selected} onClose={() => setSelected(null)} onResolve={resolve} />
+
+      <Modal
+        open={Boolean(commenting)}
+        onClose={() => setCommenting(null)}
+        size="sm"
+        title={commenting ? `Comment on notice ${commenting.id}` : ''}
+        description="Visible to everyone on your account who can see this notice."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCommenting(null)}>
+              Cancel
+            </Button>
+            <Button disabled={comment.trim().length < 3} onClick={saveComment}>
+              Add comment
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          label="Comment"
+          rows={4}
+          value={comment}
+          onChange={(event) => setComment(event.target.value)}
+          placeholder="What did you change, and when will it take effect?"
+        />
+      </Modal>
+
+      <Modal
+        open={Boolean(assigning)}
+        onClose={() => setAssigning(null)}
+        size="sm"
+        title={assigning ? `Assign notice ${assigning.id}` : ''}
+        description="Whoever owns this is responsible for closing it out."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setAssigning(null)}>
+              Cancel
+            </Button>
+            <Button onClick={saveAssignee}>Save</Button>
+          </>
+        }
+      >
+        <Input
+          label="Assignee"
+          value={assignee}
+          onChange={(event) => setAssignee(event.target.value)}
+          placeholder="K. Alvarez"
+          hint="Leave blank to unassign."
+        />
+      </Modal>
     </>
   );
 }

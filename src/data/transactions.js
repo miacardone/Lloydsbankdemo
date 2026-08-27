@@ -129,31 +129,39 @@ export const transactions = Array.from({ length: 320 }, (_, index) => buildTrans
   (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
 );
 
-/** Headline figures for the dashboard and the transactions page. */
-export const transactionSummary = (() => {
-  const approved = transactions.filter((t) => t.result === 'approved' || t.result === 'recovered');
-  const recovered = transactions.filter((t) => t.result === 'recovered');
-  const declined = transactions.filter((t) => t.result === 'declined');
+/**
+ * Headline figures for a set of rows.
+ *
+ * Written as a function over rows rather than a constant so a date-range picker
+ * can recompute it for the window the reader chose. The full-ledger constant
+ * below is just this applied to everything.
+ */
+export function summarize(rows) {
+  const approved = rows.filter((t) => t.result === 'approved' || t.result === 'recovered');
+  const recovered = rows.filter((t) => t.result === 'recovered');
+  const declined = rows.filter((t) => t.result === 'declined');
 
   const processedVolume = approved.reduce((sum, t) => sum + t.amount, 0);
   const totalFees = approved.reduce((sum, t) => sum + t.feeAmount, 0);
 
   return {
-    count: transactions.length,
+    count: rows.length,
     approvedCount: approved.length,
     declinedCount: declined.length,
     recoveredCount: recovered.length,
     recoveredVolume: recovered.reduce((sum, t) => sum + t.amount, 0),
     processedVolume,
     totalFees,
-    approvalRate: (approved.length / transactions.length) * 100,
+    approvalRate: rows.length ? (approved.length / rows.length) * 100 : 0,
     /* The number Cardflo is judged on: blended cost across every acquirer. */
     blendedEffectiveBps: processedVolume ? (totalFees / processedVolume) * 10000 : 0,
-    avgLatencyMs: Math.round(
-      transactions.reduce((sum, t) => sum + t.latencyMs, 0) / transactions.length,
-    ),
+    avgLatencyMs: rows.length
+      ? Math.round(rows.reduce((sum, t) => sum + t.latencyMs, 0) / rows.length)
+      : 0,
   };
-})();
+}
+
+export const transactionSummary = summarize(transactions);
 
 /** 90-day approval-rate and volume trend for the dashboard chart. */
 export const volumeTrend = (() => {
@@ -176,53 +184,65 @@ export const volumeTrend = (() => {
 })();
 
 /** Volume and approval rate split by acquirer — feeds the routing page. */
-export const acquirerPerformance = ACQUIRERS.map((acquirer) => {
-  const rows = transactions.filter((t) => t.acquirerId === acquirer.id);
-  const approved = rows.filter((t) => t.result === 'approved' || t.result === 'recovered');
-  const volume = approved.reduce((sum, t) => sum + t.amount, 0);
-  const fees = approved.reduce((sum, t) => sum + t.feeAmount, 0);
+export function acquirerSplit(source) {
+  return ACQUIRERS.map((acquirer) => {
+    const rows = source.filter((t) => t.acquirerId === acquirer.id);
+    const approved = rows.filter((t) => t.result === 'approved' || t.result === 'recovered');
+    const volume = approved.reduce((sum, t) => sum + t.amount, 0);
+    const fees = approved.reduce((sum, t) => sum + t.feeAmount, 0);
 
-  return {
-    ...acquirer,
-    transactions: rows.length,
-    volume,
-    approvalRate: rows.length ? (approved.length / rows.length) * 100 : 0,
-    effectiveBps: volume ? (fees / volume) * 10000 : 0,
-    avgLatencyMs: rows.length
-      ? Math.round(rows.reduce((sum, t) => sum + t.latencyMs, 0) / rows.length)
-      : 0,
-    share: 0, // filled below
-  };
-})
-  .map((row, _index, all) => {
-    const total = all.reduce((sum, item) => sum + item.transactions, 0);
-    return { ...row, share: total ? (row.transactions / total) * 100 : 0 };
+    return {
+      ...acquirer,
+      transactions: rows.length,
+      volume,
+      approvalRate: rows.length ? (approved.length / rows.length) * 100 : 0,
+      effectiveBps: volume ? (fees / volume) * 10000 : 0,
+      avgLatencyMs: rows.length
+        ? Math.round(rows.reduce((sum, t) => sum + t.latencyMs, 0) / rows.length)
+        : 0,
+      share: 0, // filled below
+    };
   })
-  .sort((a, b) => b.volume - a.volume);
+    .map((row, _index, all) => {
+      const total = all.reduce((sum, item) => sum + item.transactions, 0);
+      return { ...row, share: total ? (row.transactions / total) * 100 : 0 };
+    })
+    .sort((a, b) => b.volume - a.volume);
+}
+
+export const acquirerPerformance = acquirerSplit(transactions);
 
 /** Method mix, for the dashboard donut. */
-export const methodMix = PAYMENT_METHODS.map((method) => {
-  const rows = transactions.filter((t) => t.methodId === method.id);
-  return {
-    name: method.label,
-    group: method.group,
-    value: rows.reduce((sum, t) => sum + t.amount, 0),
-    count: rows.length,
-  };
-})
-  .filter((row) => row.count > 0)
-  .sort((a, b) => b.value - a.value);
+export function methodSplit(source) {
+  return PAYMENT_METHODS.map((method) => {
+    const rows = source.filter((t) => t.methodId === method.id);
+    return {
+      name: method.label,
+      group: method.group,
+      value: rows.reduce((sum, t) => sum + t.amount, 0),
+      count: rows.length,
+    };
+  })
+    .filter((row) => row.count > 0)
+    .sort((a, b) => b.value - a.value);
+}
+
+export const methodMix = methodSplit(transactions);
 
 /** Decline reasons, ranked. Soft declines are the recoverable revenue. */
-export const declineBreakdown = DECLINE_CODES.map((code) => {
-  const rows = transactions.filter((t) => t.declineCode === code.code);
-  return {
-    ...code,
-    count: rows.length,
-    value: rows.reduce((sum, t) => sum + t.amount, 0),
-  };
-})
-  .filter((row) => row.count > 0)
-  .sort((a, b) => b.count - a.count);
+export function declineSplit(source) {
+  return DECLINE_CODES.map((code) => {
+    const rows = source.filter((t) => t.declineCode === code.code);
+    return {
+      ...code,
+      count: rows.length,
+      value: rows.reduce((sum, t) => sum + t.amount, 0),
+    };
+  })
+    .filter((row) => row.count > 0)
+    .sort((a, b) => b.count - a.count);
+}
+
+export const declineBreakdown = declineSplit(transactions);
 
 export default transactions;

@@ -85,6 +85,8 @@ export function MidHealth() {
               { value: 'medium', label: 'Medium risk' },
               { value: 'low', label: 'Low risk' },
             ]}
+            value={table.filters.rating ?? 'all'}
+            onChange={(event) => table.setFilter('rating', event.target.value)}
           />
         }
       />

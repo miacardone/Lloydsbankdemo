@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Banknote, Gauge, Percent, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -6,15 +7,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Field';
 import { ChartCard } from '@/components/charts/ChartCard';
 import { DonutStat, TrendArea } from '@/components/charts/Charts';
-import { DATE_RANGES } from '@/config/app';
+import { DATE_RANGES, DEFAULT_RANGE, rangeStart } from '@/config/app';
 import { features } from '@/config/features';
 import {
-  acquirerPerformance,
-  declineBreakdown,
-  methodMix,
-  transactionSummary,
+  acquirerSplit,
+  declineSplit,
+  methodSplit,
+  summarize,
+  transactions,
   volumeTrend,
 } from '@/data/transactions';
+import { TODAY } from '@/data/seed';
 import { chargebackKpis } from '@/data/chargebacks';
 import { settlementSummary } from '@/data/settlements';
 import {
@@ -46,9 +49,9 @@ const METHOD_COLORS = {
  * is "how concentrated am I?", and a single bar answers that at a glance in a
  * way six pie slices do not.
  */
-function AcquirerSplit() {
-  const top = acquirerPerformance.slice(0, 5);
-  const rest = acquirerPerformance.slice(5);
+function AcquirerSplit({ acquirers }) {
+  const top = acquirers.slice(0, 5);
+  const rest = acquirers.slice(5);
   const restShare = rest.reduce((sum, a) => sum + a.share, 0);
 
   return (
@@ -110,10 +113,10 @@ function AcquirerSplit() {
 }
 
 /** Soft declines are recoverable revenue; hard declines are not. The split matters. */
-function DeclinePanel() {
-  const soft = declineBreakdown.filter((d) => d.type === 'soft');
+function DeclinePanel({ declines }) {
+  const soft = declines.filter((d) => d.type === 'soft');
   const softCount = soft.reduce((sum, d) => sum + d.count, 0);
-  const total = declineBreakdown.reduce((sum, d) => sum + d.count, 0);
+  const total = declines.reduce((sum, d) => sum + d.count, 0);
 
   return (
     <section className="relative overflow-hidden rounded-cf border border-line bg-surface pt-[3px] shadow-cf before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-brand">
@@ -125,7 +128,7 @@ function DeclinePanel() {
       </header>
 
       <ul className="px-4 pb-2">
-        {declineBreakdown.slice(0, 6).map((decline) => {
+        {declines.slice(0, 6).map((decline) => {
           const share = total ? (decline.count / total) * 100 : 0;
           return (
             <li key={decline.code} className="py-1.5">
@@ -159,8 +162,33 @@ function DeclinePanel() {
 }
 
 export function Dashboard() {
+  const [range, setRange] = useState(DEFAULT_RANGE);
+
+  /* Every panel below is derived from the same windowed slice, so the range
+     picker moves the whole page rather than decorating the header. */
+  const view = useMemo(() => {
+    const from = rangeStart(range, TODAY);
+    const rows = transactions.filter((row) => row.createdAt.slice(0, 10) >= from);
+    return {
+      from,
+      summary: summarize(rows),
+      acquirers: acquirerSplit(rows),
+      methods: methodSplit(rows),
+      declines: declineSplit(rows),
+      trend: volumeTrend.filter((point) => point.date >= from),
+    };
+  }, [range]);
+
+  const transactionSummary = view.summary;
+  const acquirerPerformance = view.acquirers;
+  const methodMix = view.methods;
+  const declineBreakdown = view.declines;
+
   const topMethod = methodMix[0];
   const methodTotal = methodMix.reduce((sum, m) => sum + m.value, 0);
+  const rangeLabel = (
+    DATE_RANGES.find((entry) => entry.value === range) ?? DATE_RANGES[2]
+  ).label.toLowerCase();
 
   return (
     <>
@@ -170,7 +198,8 @@ export function Dashboard() {
         actions={
           <Select
             aria-label="Date range"
-            defaultValue="Last 90 days"
+            value={range}
+            onChange={(event) => setRange(event.target.value)}
             options={DATE_RANGES}
             className="w-44"
           />
@@ -218,13 +247,13 @@ export function Dashboard() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <ChartCard
-          title="Processed volume, last 90 days"
+          title={`Processed volume, ${rangeLabel}`}
           className="lg:col-span-2"
           height={260}
           note="Volume settled across all acquirers, in your reporting currency."
         >
           <TrendArea
-            data={volumeTrend}
+            data={view.trend}
             xKey="date"
             yKey="volume"
             name="Volume"
@@ -252,8 +281,8 @@ export function Dashboard() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <AcquirerSplit />
-        <DeclinePanel />
+        <AcquirerSplit acquirers={acquirerPerformance} />
+        <DeclinePanel declines={declineBreakdown} />
       </div>
 
       <p className="mt-3 text-[0.75rem] text-ink-subtle">

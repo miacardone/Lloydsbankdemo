@@ -1,23 +1,40 @@
+import { useMemo, useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ChartCard } from '@/components/charts/ChartCard';
 import { DonutStat, Gauge, MultiArea } from '@/components/charts/Charts';
 import { Card } from '@/components/ui/Card';
 import { Select } from '@/components/ui/Field';
-import { DATE_RANGES } from '@/config/app';
+import { DATE_RANGES, rangeStart } from '@/config/app';
 import { CARD_BRAND_COLORS, ALERT_SOURCES } from '@/data/reference';
 import {
   alertBreakdown,
   alertKpis,
-  alertsByCardType,
-  alertsByOutcome,
+  alerts,
+  cardTypeSplit,
   newAlertsByDate,
+  outcomeSplit,
 } from '@/data/alerts';
+import { TODAY } from '@/data/seed';
 import { formatNumber, formatPercent, formatShortDate } from '@/lib/format';
 
 export function AlertsReport() {
-  const topCard = alertsByCardType[0];
-  const topOutcome = alertsByOutcome[0];
-  const totalAlerts = alertsByOutcome.reduce((sum, row) => sum + row.value, 0);
+  const [range, setRange] = useState('30');
+
+  const view = useMemo(() => {
+    const from = rangeStart(range, TODAY);
+    const rows = alerts.filter((alert) => alert.alertDate >= from);
+    return {
+      from,
+      cards: cardTypeSplit(rows),
+      outcomes: outcomeSplit(rows),
+      dates: newAlertsByDate.filter((point) => point.date >= from),
+      total: rows.length,
+    };
+  }, [range]);
+
+  const topCard = view.cards[0];
+  const topOutcome = view.outcomes[0];
+  const totalAlerts = view.total || 1;
 
   return (
     <>
@@ -29,7 +46,8 @@ export function AlertsReport() {
             aria-label="Date range"
             className="w-44"
             options={DATE_RANGES}
-            defaultValue="Last 30 days"
+            value={range}
+            onChange={(event) => setRange(event.target.value)}
           />
         }
       />
@@ -37,9 +55,9 @@ export function AlertsReport() {
       <div className="grid gap-4 lg:grid-cols-3">
         <ChartCard title="Alerts by card type" height={260}>
           <DonutStat
-            data={alertsByCardType}
-            headline={`${Math.round((topCard.value / totalAlerts) * 100)}%`}
-            subline={topCard.name}
+            data={view.cards}
+            headline={topCard ? `${Math.round((topCard.value / totalAlerts) * 100)}%` : '—'}
+            subline={topCard?.name ?? 'No alerts in range'}
             colors={CARD_BRAND_COLORS}
           />
         </ChartCard>
@@ -84,12 +102,12 @@ export function AlertsReport() {
         <ChartCard
           title="Alerts by outcome"
           height={260}
-          note={`${topOutcome.name} is the most common resolution.`}
+          note={`${topOutcome?.name ?? 'Nothing'} is the most common resolution in this window.`}
         >
           <DonutStat
-            data={alertsByOutcome}
-            headline={`${Math.round((topOutcome.value / totalAlerts) * 100)}%`}
-            subline={topOutcome.name}
+            data={view.outcomes}
+            headline={topOutcome ? `${Math.round((topOutcome.value / totalAlerts) * 100)}%` : '—'}
+            subline={topOutcome?.name ?? 'No alerts in range'}
           />
         </ChartCard>
       </div>
@@ -100,12 +118,7 @@ export function AlertsReport() {
           height={300}
           note="Each line is one alert provider. Overlap tells you where you are paying twice for the same signal."
         >
-          <MultiArea
-            data={newAlertsByDate}
-            xKey="date"
-            keys={ALERT_SOURCES}
-            formatX={formatShortDate}
-          />
+          <MultiArea data={view.dates} xKey="date" keys={ALERT_SOURCES} formatX={formatShortDate} />
         </ChartCard>
       </div>
     </>

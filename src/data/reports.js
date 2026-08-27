@@ -114,24 +114,49 @@ export const callCenterPerformance = [
   },
 ];
 
-/** Month-to-date operating figures, the table analysts live in at month end. */
-export const monthToDate = Array.from({ length: 12 }, (_, index) => {
-  const posted = between(random, 40, 260);
-  const responded = Math.round(posted * (0.62 + random() * 0.3));
-  const won = Math.round(responded * (0.4 + random() * 0.35));
-  return {
-    id: `mtd-${index}`,
-    gateway: `Gateway ${String.fromCharCode(65 + (index % 5))}`,
-    mid: String(between(random, 5544220000, 6546946700)),
-    posted,
-    responded,
-    won,
-    lost: responded - won,
-    winRate: Number(((won / responded) * 100).toFixed(1)),
-    recovered: between(random, 4200, 48000, 2),
-    pending: posted - responded,
-  };
-});
+/**
+ * Month-to-date operating figures, the table analysts live in at month end.
+ *
+ * Built per reporting month rather than once, because the month picker on the
+ * report has to actually change the numbers underneath it. Each month gets its
+ * own seed so the figures are stable but not identical.
+ */
+export const MTD_MONTHS = [
+  { value: '2026-08', label: 'August 2026' },
+  { value: '2026-07', label: 'July 2026' },
+  { value: '2026-06', label: 'June 2026' },
+];
+
+function buildMonthToDate(seed, month) {
+  const monthRandom = createRandom(seed);
+  return Array.from({ length: 12 }, (_, index) => {
+    const posted = between(monthRandom, 40, 260);
+    const responded = Math.round(posted * (0.62 + monthRandom() * 0.3));
+    const won = Math.round(responded * (0.4 + monthRandom() * 0.35));
+    return {
+      id: `mtd-${month}-${index}`,
+      month,
+      gateway: `Gateway ${String.fromCharCode(65 + (index % 5))}`,
+      mid: String(between(monthRandom, 5544220000, 6546946700)),
+      posted,
+      responded,
+      won,
+      lost: responded - won,
+      winRate: Number(((won / responded) * 100).toFixed(1)),
+      recovered: between(monthRandom, 4200, 48000, 2),
+      pending: posted - responded,
+    };
+  });
+}
+
+export const monthToDateByMonth = Object.fromEntries(
+  MTD_MONTHS.map((entry, index) => [
+    entry.value,
+    buildMonthToDate(367801 + index * 7717, entry.value),
+  ]),
+);
+
+export const monthToDate = monthToDateByMonth[MTD_MONTHS[0].value];
 
 export const midHealthTrend = trendSeries(random, { points: 20, base: 62, amplitude: 26 }).map(
   (value, index) => ({ date: isoDate(daysAgo((19 - index) * 3)), score: value }),

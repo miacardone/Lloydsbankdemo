@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useToast } from '@/components/ui/Toast';
 import { features } from '@/config/features';
 import {
   notificationPreferences as seedPreferences,
@@ -19,10 +20,34 @@ import { formatDate } from '@/lib/format';
  * Emails and webhooks live together because they answer the same question:
  * how does this account find out something happened?
  */
+const BLANK_HOOK = { event: '', endpoint: '' };
+
 export function NotificationSettings() {
+  const { notify } = useToast();
   const [preferences, setPreferences] = useState(seedPreferences);
   const [hooks, setHooks] = useState(seedWebhooks);
   const [addOpen, setAddOpen] = useState(false);
+  const [draft, setDraft] = useState({ ...BLANK_HOOK, event: webhookEvents[0] });
+
+  const draftValid = draft.event && /^https:\/\/.+/.test(draft.endpoint.trim());
+
+  const addHook = () => {
+    setHooks((current) => [
+      ...current,
+      {
+        id: `wh-${current.length + 20}`,
+        event: draft.event,
+        endpoint: draft.endpoint.trim(),
+        createdAt: '2026-08-04',
+        updatedAt: '2026-08-04',
+        createdBy: 'you',
+        active: true,
+      },
+    ]);
+    setDraft({ ...BLANK_HOOK, event: webhookEvents[0] });
+    setAddOpen(false);
+    notify('Endpoint added — events will start posting immediately.');
+  };
 
   const toggle = (id) =>
     setPreferences((current) =>
@@ -44,7 +69,13 @@ export function NotificationSettings() {
               <Toggle
                 key={preference.id}
                 checked={preference.enabled}
-                onChange={() => toggle(preference.id)}
+                onChange={() => {
+                  toggle(preference.id);
+                  notify(
+                    `${preference.enabled ? 'Turned off' : 'Turned on'}: ${preference.label}`,
+                    { tone: 'info' },
+                  );
+                }}
                 label={preference.label}
               />
             ))}
@@ -90,9 +121,10 @@ export function NotificationSettings() {
                     <IconButton
                       icon={Trash2}
                       label={`Remove ${hook.event} endpoint`}
-                      onClick={() =>
-                        setHooks((current) => current.filter((item) => item.id !== hook.id))
-                      }
+                      onClick={() => {
+                        setHooks((current) => current.filter((item) => item.id !== hook.id));
+                        notify(`Removed the ${hook.event} endpoint.`, { tone: 'info' });
+                      }}
                     />
                   </li>
                 ))}
@@ -112,18 +144,30 @@ export function NotificationSettings() {
             <Button variant="secondary" onClick={() => setAddOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setAddOpen(false)}>Add endpoint</Button>
+            <Button disabled={!draftValid} onClick={addHook}>
+              Add endpoint
+            </Button>
           </>
         }
       >
         <div className="space-y-3">
-          <Select label="Event" required options={webhookEvents} />
+          <Select
+            label="Event"
+            required
+            options={webhookEvents}
+            value={draft.event}
+            onChange={(event) => setDraft((current) => ({ ...current, event: event.target.value }))}
+          />
           <Input
             label="Endpoint URL"
             required
             type="url"
             placeholder="https://api.yourdomain.com/webhooks/disputes"
             hint="Must be HTTPS and reachable from the public internet."
+            value={draft.endpoint}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, endpoint: event.target.value }))
+            }
           />
         </div>
       </Modal>

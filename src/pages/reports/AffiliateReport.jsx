@@ -1,6 +1,5 @@
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/table/DataTable';
-import { Input } from '@/components/ui/Field';
 import { useTableState } from '@/hooks/useTableState';
 import { affiliateReport } from '@/data/reports';
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format';
@@ -72,14 +71,8 @@ export function AffiliateReport() {
         description={`Affiliate ${worst.affiliateId} is sending the most disputed traffic at ${formatPercent(
           worst.cbAmountShare,
         )} of its volume. Sort by CB amount % to rank the rest.`}
-        actions={
-          <Input
-            type="date"
-            aria-label="Filter by date"
-            defaultValue="2026-08-04"
-            className="w-44"
-          />
-        }
+        /* Removed a date picker: affiliate rows are a period roll-up and carry
+           no transaction date to filter on. */
       />
       <DataTable
         columns={columns}

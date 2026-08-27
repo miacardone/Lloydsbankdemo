@@ -1,7 +1,12 @@
-import { ExternalLink, Mail, MessageSquare, Phone, Play } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Mail, MessageSquare, Phone, Play, Send } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { Select, Textarea } from '@/components/ui/Field';
+import { useToast } from '@/components/ui/Toast';
+import { currentUser } from '@/data/users';
 import { useBrand } from '@/hooks/useBrand';
 
 const GUIDES = [
@@ -40,15 +45,38 @@ const GUIDES = [
   },
 ];
 
+const TOPICS = [
+  'A chargeback case',
+  'A pre-dispute alert',
+  'Settlement or payouts',
+  'Routing rules',
+  'Users and access',
+  'Something else',
+];
+
 export function Support() {
   const { brand } = useBrand();
+  const { notify } = useToast();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [topic, setTopic] = useState(TOPICS[0]);
+  const [message, setMessage] = useState('');
+
+  const send = () => {
+    setChatOpen(false);
+    setMessage('');
+    notify(`Message sent. ${brand.name} support usually replies within the hour.`);
+  };
 
   return (
     <>
       <PageHeader
         title="Support"
         description="Short walkthroughs for the things people ask about most, and a direct line when they do not cover it."
-        actions={<Button icon={MessageSquare}>Start a chat</Button>}
+        actions={
+          <Button icon={MessageSquare} onClick={() => setChatOpen(true)}>
+            Start a chat
+          </Button>
+        }
       />
 
       <Card className="mb-4">
@@ -70,14 +98,56 @@ export function Support() {
         </div>
       </Card>
 
+      <Modal
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        title="Start a chat"
+        description={`Weekdays, 8am to 8pm Eastern. We reply to ${currentUser.email}.`}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setChatOpen(false)}>
+              Cancel
+            </Button>
+            <Button icon={Send} disabled={message.trim().length < 10} onClick={send}>
+              Send message
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Select
+            label="What is this about?"
+            options={TOPICS}
+            value={topic}
+            onChange={(event) => setTopic(event.target.value)}
+          />
+          <Textarea
+            label="Message"
+            rows={5}
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            placeholder="Include the case or alert number if you have one."
+          />
+        </div>
+      </Modal>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {GUIDES.map((guide) => (
           <Card key={guide.title}>
-            <div className="mb-3 flex aspect-video items-center justify-center rounded-cf bg-brand-lightest">
+            <button
+              type="button"
+              onClick={() =>
+                notify(`"${guide.title}" is a placeholder in this demo — no video is attached.`, {
+                  tone: 'info',
+                })
+              }
+              aria-label={`Play ${guide.title}`}
+              className="mb-3 flex aspect-video w-full items-center justify-center rounded-cf bg-brand-lightest transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand text-brand-contrast">
                 <Play size={20} aria-hidden="true" />
               </span>
-            </div>
+            </button>
             <h3 className="text-cf-body font-bold text-ink">{guide.title}</h3>
             <p className="mt-1 text-cf-body text-ink-muted">{guide.description}</p>
             <p className="mt-2 flex items-center gap-1 text-[0.75rem] text-ink-subtle">

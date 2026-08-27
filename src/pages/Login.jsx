@@ -38,7 +38,7 @@ export function Login() {
             Sign in
           </h2>
           <p className="mt-1 text-cf-body text-ink-muted">
-            Use your {brand.name} operator account to continue.
+            Sign in to your {brand.name} merchant account to continue.
           </p>
         </div>
 

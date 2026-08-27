@@ -119,8 +119,8 @@ export function useReorder(keys, { locked = [], axis = 'vertical', onChange } = 
       if (!start) return;
 
       if (!start.moved) {
-        const travelled = Math.hypot(event.clientX - start.x, event.clientY - start.y);
-        if (travelled < 5) return;
+        const traveled = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+        if (traveled < 5) return;
         start.moved = true;
         dragged.current = true;
         setDragKey(start.key);

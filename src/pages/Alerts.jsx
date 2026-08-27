@@ -8,6 +8,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
 import { StatCard } from '@/components/ui/StatCard';
+import { useToast } from '@/components/ui/Toast';
 import { useTableState } from '@/hooks/useTableState';
 import { alertKpis, alerts, autoRefundRules } from '@/data/alerts';
 import { ALERT_OUTCOMES, ALERT_SOURCES } from '@/data/reference';
@@ -17,8 +18,22 @@ const STATUS_TONE = { resolved: 'positive', open: 'caution', expired: 'neutral' 
 const STATUS_LABEL = { resolved: 'Resolved', open: 'Open', expired: 'Expired' };
 
 export function Alerts() {
+  const { notify } = useToast();
   const [rules, setRules] = useState(autoRefundRules);
   const [rulesOpen, setRulesOpen] = useState(false);
+
+  const addRule = (draft) => {
+    const rule = {
+      id: `rule-${rules.length + 1}`,
+      name: draft.name.trim() || `${draft.when} ${draft.value}`.trim(),
+      criteria: `${draft.when} ${draft.value}`.trim(),
+      action: draft.action,
+      enabled: true,
+      matchedLast30: 0,
+    };
+    setRules((current) => [...current, rule]);
+    notify(`Rule "${rule.name}" is live — matching alerts are actioned automatically.`);
+  };
 
   const table = useTableState(alerts, {
     searchKeys: ['alertId', 'orderId', 'last4', 'mid', 'merchantName'],
@@ -139,6 +154,7 @@ export function Alerts() {
         open={rulesOpen}
         onClose={() => setRulesOpen(false)}
         rules={rules}
+        onAdd={addRule}
         onToggle={(id) =>
           setRules((current) =>
             current.map((rule) => (rule.id === id ? { ...rule, enabled: !rule.enabled } : rule)),
@@ -149,7 +165,13 @@ export function Alerts() {
   );
 }
 
-function AutoRefundRules({ open, onClose, rules, onToggle }) {
+const BLANK_AUTO_RULE = { name: '', when: 'Amount is under', value: '', action: 'Refund' };
+
+function AutoRefundRules({ open, onClose, rules, onAdd, onToggle }) {
+  const [draft, setDraft] = useState(BLANK_AUTO_RULE);
+  const set = (patch) => setDraft((current) => ({ ...current, ...patch }));
+  const ready = draft.value.trim().length > 0;
+
   return (
     <Modal
       open={open}
@@ -162,7 +184,16 @@ function AutoRefundRules({ open, onClose, rules, onToggle }) {
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
-          <Button icon={Plus}>Add rule</Button>
+          <Button
+            icon={Plus}
+            disabled={!ready}
+            onClick={() => {
+              onAdd(draft);
+              setDraft(BLANK_AUTO_RULE);
+            }}
+          >
+            Add rule
+          </Button>
         </>
       }
     >
@@ -191,13 +222,32 @@ function AutoRefundRules({ open, onClose, rules, onToggle }) {
             title="New rule"
             description="Alerts matching all of these are actioned automatically."
           />
+          <Input
+            label="Rule name"
+            placeholder="Low-value instant refund"
+            value={draft.name}
+            onChange={(event) => set({ name: event.target.value })}
+            className="mb-3"
+          />
           <div className="grid gap-3 sm:grid-cols-3">
             <Select
               label="When"
               options={['Amount is under', 'Amount is over', 'Card type is', 'Descriptor contains']}
+              value={draft.when}
+              onChange={(event) => set({ when: event.target.value })}
             />
-            <Input label="Value" placeholder="75.00" />
-            <Select label="Then" options={['Refund', 'Route to analyst', 'Ignore']} />
+            <Input
+              label="Value"
+              placeholder="75.00"
+              value={draft.value}
+              onChange={(event) => set({ value: event.target.value })}
+            />
+            <Select
+              label="Then"
+              options={['Refund', 'Route to analyst', 'Ignore']}
+              value={draft.action}
+              onChange={(event) => set({ action: event.target.value })}
+            />
           </div>
         </Card>
       </div>
