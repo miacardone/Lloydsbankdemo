@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, TrendingDown, TrendingUp } from 'lucide-react';
-import { Tooltip } from './Tooltip';
+import { Explain, Tooltip } from './Tooltip';
 import { glossaryHint } from '@/data/glossary';
 import { cn } from '@/lib/cn';
 
@@ -44,25 +44,41 @@ export function StatCard({
           <p className="mt-1.5 font-display text-[2rem] font-semibold leading-none text-ink">
             {value}
           </p>
-          {caption ? <p className="mt-1.5 text-[0.75rem] text-ink-subtle">{caption}</p> : null}
+          {caption ? (
+            <p className="mt-1.5 text-[0.75rem] text-ink-subtle">
+              <Explain>{caption}</Explain>
+            </p>
+          ) : null}
         </div>
         {Icon ? (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-lightest text-brand">
-            <Icon size={18} strokeWidth={2} aria-hidden="true" />
-          </span>
+          <Tooltip label={tip ?? label}>
+            <span
+              tabIndex={0}
+              className="flex h-10 w-10 shrink-0 cursor-help items-center justify-center rounded-full bg-brand-lightest text-brand"
+            >
+              <Icon size={18} strokeWidth={2} aria-hidden="true" />
+            </span>
+          </Tooltip>
         ) : null}
       </div>
 
       {hasDelta ? (
-        <p
-          className={cn(
-            'mt-3 inline-flex items-center gap-1 text-[0.75rem] font-semibold',
-            good ? 'text-positive' : 'text-negative',
-          )}
+        <Tooltip
+          label={`${rising ? 'Up' : 'Down'} ${Math.abs(delta)}% on the same period last month — ${
+            good ? 'moving the right way' : 'moving the wrong way'
+          } for this measure.`}
         >
-          <TrendIcon size={14} aria-hidden="true" />
-          {Math.abs(delta)}%<span className="font-normal text-ink-subtle">vs last month</span>
-        </p>
+          <p
+            tabIndex={0}
+            className={cn(
+              'mt-3 inline-flex cursor-help items-center gap-1 text-[0.75rem] font-semibold',
+              good ? 'text-positive' : 'text-negative',
+            )}
+          >
+            <TrendIcon size={14} aria-hidden="true" />
+            {Math.abs(delta)}%<span className="font-normal text-ink-subtle">vs last month</span>
+          </p>
+        </Tooltip>
       ) : null}
 
       {to ? (

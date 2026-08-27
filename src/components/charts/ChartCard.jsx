@@ -1,3 +1,4 @@
+import { Explain } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/cn';
 
 /**
@@ -21,7 +22,9 @@ export function ChartCard({ title, actions, note, height = 240, children, classN
         {children}
       </div>
       {note ? (
-        <p className="border-t border-line px-4 py-2 text-[0.75rem] text-ink-subtle">{note}</p>
+        <p className="border-t border-line px-4 py-2 text-[0.75rem] text-ink-subtle">
+          <Explain>{note}</Explain>
+        </p>
       ) : null}
     </section>
   );

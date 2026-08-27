@@ -6,5 +6,5 @@ export { Modal } from './Modal';
 export { EmptyState } from './EmptyState';
 export { Skeleton, TableSkeleton } from './Skeleton';
 export { Tabs } from './Tabs';
-export { Tooltip, Abbr } from './Tooltip';
+export { Tooltip, Abbr, Explain } from './Tooltip';
 export { StatCard } from './StatCard';

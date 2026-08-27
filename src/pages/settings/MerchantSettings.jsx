@@ -6,12 +6,24 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { useToast } from '@/components/ui/Toast';
+import { glossaryHint } from '@/data/glossary';
 import { merchantTree } from '@/data/merchants';
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
 const ALERT_SERVICES = ['Ethoca', 'Verifi CDRN', 'Verifi Order Insight', 'RDR', 'Consumer Clarity'];
+
+const MID_COLUMNS = [
+  'Status',
+  'MID',
+  'Alias',
+  'Descriptor',
+  'Platform',
+  'Service level',
+  'Onboarded',
+];
 
 const BLANK_MID = {
   mid: '',
@@ -156,7 +168,9 @@ export function MerchantSettings() {
                       checked={on}
                       onChange={() => toggleService(service)}
                       label={service}
-                      description={on ? 'Active for all MIDs' : 'Not enabled'}
+                      description={
+                        glossaryHint(service) ?? (on ? 'Active for all MIDs' : 'Not enabled')
+                      }
                     />
                   </div>
                 );
@@ -172,23 +186,29 @@ export function MerchantSettings() {
               <table className="w-full min-w-[640px] text-left">
                 <thead>
                   <tr className="border-y border-line bg-surface-sunken">
-                    {[
-                      'Status',
-                      'MID',
-                      'Alias',
-                      'Descriptor',
-                      'Platform',
-                      'Service level',
-                      'Onboarded',
-                    ].map((heading) => (
-                      <th
-                        key={heading}
-                        scope="col"
-                        className="whitespace-nowrap px-3 py-2 text-cf-label uppercase text-ink-muted"
-                      >
-                        {heading}
-                      </th>
-                    ))}
+                    {MID_COLUMNS.map((heading) => {
+                      const hint = glossaryHint(heading);
+                      return (
+                        <th
+                          key={heading}
+                          scope="col"
+                          className="whitespace-nowrap px-3 py-2 text-cf-label uppercase text-ink-muted"
+                        >
+                          <Tooltip label={hint}>
+                            <span
+                              tabIndex={hint ? 0 : undefined}
+                              className={
+                                hint
+                                  ? 'cursor-help underline decoration-dotted underline-offset-2'
+                                  : undefined
+                              }
+                            >
+                              {heading}
+                            </span>
+                          </Tooltip>
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>

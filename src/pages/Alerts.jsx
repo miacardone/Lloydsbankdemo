@@ -9,6 +9,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Input, Select, Toggle } from '@/components/ui/Field';
 import { StatCard } from '@/components/ui/StatCard';
 import { useToast } from '@/components/ui/Toast';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { glossaryHint } from '@/data/glossary';
 import { useTableState } from '@/hooks/useTableState';
 import { alertKpis, alerts, autoRefundRules } from '@/data/alerts';
 import { ALERT_OUTCOMES, ALERT_SOURCES } from '@/data/reference';
@@ -53,7 +55,18 @@ export function Alerts() {
       value: (row) => STATUS_LABEL[row.status],
     },
     { key: 'alertId', header: 'Alert ID' },
-    { key: 'source', header: 'Source' },
+    {
+      key: 'source',
+      header: 'Source',
+      hint: 'Which pre-dispute network told you about this, before it became a chargeback.',
+      render: (row) => (
+        <Tooltip label={glossaryHint(row.source)}>
+          <span tabIndex={0} className="cursor-help underline decoration-dotted underline-offset-2">
+            {row.source}
+          </span>
+        </Tooltip>
+      ),
+    },
     { key: 'orderId', header: 'Order ID' },
     {
       key: 'transAmount',

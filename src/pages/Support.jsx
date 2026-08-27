@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Select, Textarea } from '@/components/ui/Field';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { useToast } from '@/components/ui/Toast';
 import { currentUser } from '@/data/users';
 import { useBrand } from '@/hooks/useBrand';
@@ -150,10 +151,15 @@ export function Support() {
             </button>
             <h3 className="text-cf-body font-bold text-ink">{guide.title}</h3>
             <p className="mt-1 text-cf-body text-ink-muted">{guide.description}</p>
-            <p className="mt-2 flex items-center gap-1 text-[0.75rem] text-ink-subtle">
-              <ExternalLink size={12} aria-hidden="true" />
-              Video · {guide.length}
-            </p>
+            <Tooltip label="Placeholder in this demo — no video is attached yet.">
+              <p
+                tabIndex={0}
+                className="mt-2 flex w-fit cursor-help items-center gap-1 text-[0.75rem] text-ink-subtle"
+              >
+                <ExternalLink size={12} aria-hidden="true" />
+                Video · {guide.length}
+              </p>
+            </Tooltip>
           </Card>
         ))}
       </div>

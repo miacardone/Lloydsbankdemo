@@ -1,3 +1,4 @@
+import { Explain } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/cn';
 
 /**
@@ -13,7 +14,9 @@ export function PageHeader({ title, description, actions, children, className })
             {title}
           </h1>
           {description ? (
-            <p className="mt-1 max-w-2xl text-cf-body text-ink-muted">{description}</p>
+            <p className="mt-1 max-w-2xl text-cf-body text-ink-muted">
+              <Explain>{description}</Explain>
+            </p>
           ) : null}
         </div>
         {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

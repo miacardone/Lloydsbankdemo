@@ -100,7 +100,10 @@ export function Monitoring() {
       {summaryOpen ? (
         <Card className="mb-4">
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+            <span
+              title="Written from this window's complaint, fulfillment and MID health figures"
+              className="mt-0.5 flex h-8 w-8 shrink-0 cursor-help items-center justify-center rounded-full bg-accent-soft text-accent"
+            >
               <Sparkles size={16} aria-hidden="true" />
             </span>
             <div>

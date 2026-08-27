@@ -1,3 +1,4 @@
+import { Explain } from './Tooltip';
 import { cn } from '@/lib/cn';
 
 /**
@@ -26,7 +27,11 @@ export function CardHeader({ title, description, actions, className }) {
     <header className={cn('flex flex-wrap items-start justify-between gap-3 pb-3', className)}>
       <div className="min-w-0">
         <h2 className="truncate text-cf-body-lg font-semibold text-ink">{title}</h2>
-        {description ? <p className="mt-0.5 text-cf-body text-ink-muted">{description}</p> : null}
+        {description ? (
+          <p className="mt-0.5 text-cf-body text-ink-muted">
+            <Explain>{description}</Explain>
+          </p>
+        ) : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </header>

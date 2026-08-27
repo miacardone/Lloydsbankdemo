@@ -3,6 +3,8 @@ import { CircleCheck, CircleX, Clock, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/table/DataTable';
 import { Badge, Modal, Select, StatCard } from '@/components/ui';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { glossaryHint } from '@/data/glossary';
 import { useTableState } from '@/hooks/useTableState';
 import { useBrand } from '@/hooks/useBrand';
 import { transactions, transactionSummary } from '@/data/transactions';
@@ -128,6 +130,7 @@ export function Transactions() {
     {
       key: 'methodLabel',
       header: 'Method',
+      hint: 'How the cardholder paid — card, wallet, bank transfer or instalment plan.',
       render: (row) => (
         <span className="text-ink-muted">
           {row.cardBrand ? `${row.cardBrand} ${maskCard(row.last4)}` : row.methodLabel}
@@ -138,10 +141,18 @@ export function Transactions() {
     {
       key: 'acquirerName',
       header: 'Acquirer',
+      hint: 'Which acquirer took the payment, and the rule that sent it there.',
       render: (row) => (
         <span className="flex flex-col">
           <span className="text-ink">{row.acquirerName}</span>
-          <span className="text-[0.6875rem] text-ink-subtle">{row.routingReasonLabel}</span>
+          <Tooltip label={glossaryHint(row.routingReasonLabel)}>
+            <span
+              tabIndex={0}
+              className="w-fit cursor-help text-[0.6875rem] text-ink-subtle underline decoration-dotted underline-offset-2"
+            >
+              {row.routingReasonLabel}
+            </span>
+          </Tooltip>
         </span>
       ),
       value: (row) => row.acquirerName,
@@ -160,6 +171,7 @@ export function Transactions() {
     {
       key: 'effectiveBps',
       header: 'Rate',
+      hint: 'Cost of accepting this payment in basis points — 100 bps is 1% of the amount.',
       align: 'right',
       render: (row) => (
         <span className="tabular-nums text-ink-muted">{formatBps(row.effectiveBps)}</span>
@@ -169,6 +181,7 @@ export function Transactions() {
     {
       key: 'result',
       header: 'Result',
+      hint: 'What the issuer did with the authorization request.',
       render: (row) => <ResultBadge result={row.result} />,
       value: (row) => row.result,
     },

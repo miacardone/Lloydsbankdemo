@@ -69,6 +69,7 @@ export function DataTable({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search"
+              title="Free-text search across every column in this table"
               aria-label={caption ? `Search ${caption}` : 'Search table'}
               className="h-8 w-52 rounded-cf border border-lineStrong bg-surface pl-8 pr-3 text-cf-body text-ink placeholder:text-ink-subtle focus:border-brand focus:outline focus:outline-2 focus:outline-brand/30"
             />
@@ -83,14 +84,16 @@ export function DataTable({
         </div>
 
         {exportName ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={Download}
-            onClick={() => downloadCsv(exportName, orderedColumns, state.allRows)}
-          >
-            Export CSV
-          </Button>
+          <Tooltip label="Downloads every filtered row, in the column order on screen">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Download}
+              onClick={() => downloadCsv(exportName, orderedColumns, state.allRows)}
+            >
+              Export CSV
+            </Button>
+          </Tooltip>
         ) : null}
       </div>
 
@@ -148,7 +151,9 @@ export function DataTable({
                         size={11}
                         aria-hidden="true"
                         className="shrink-0 text-ink-subtle opacity-0 transition group-hover:opacity-70"
-                      />
+                      >
+                        <title>Drag to move this column</title>
+                      </GripVertical>
                       <Tooltip label={tip}>
                         {sortable ? (
                           <button
@@ -264,9 +269,9 @@ export function Pagination({ state }) {
         <span>
           Showing {from}–{to} of {total}
         </span>
-        <label className="flex items-center gap-1.5">
-          <span className="sr-only">Rows per page</span>
+        <Tooltip label="How many rows to show on each page">
           <select
+            aria-label="Rows per page"
             value={pageSize}
             onChange={(event) => setPageSize(Number(event.target.value))}
             className="h-7 rounded-cf border border-lineStrong bg-surface px-1.5 text-[0.75rem] focus:border-brand focus:outline focus:outline-2 focus:outline-brand/30"
@@ -277,7 +282,7 @@ export function Pagination({ state }) {
               </option>
             ))}
           </select>
-        </label>
+        </Tooltip>
       </div>
 
       <nav className="flex items-center gap-1" aria-label="Pagination">

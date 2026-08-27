@@ -15,6 +15,8 @@ import { useTableState } from '@/hooks/useTableState';
 import { chargebacks } from '@/data/chargebacks';
 import { daysUntil, responseDeadline } from '@/data/evidence';
 import { TODAY } from '@/data/seed';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { glossaryHint } from '@/data/glossary';
 import { CARD_BRANDS, CYCLES, MERCHANTS } from '@/data/reference';
 import { formatCurrencyIn, formatDate, maskCard } from '@/lib/format';
 
@@ -24,24 +26,28 @@ const OUTCOME_META = {
   pending: { icon: Circle, tone: 'caution', label: 'In progress' },
 };
 
+/* An icon on its own is a riddle. The tooltip carries the reading, and the
+   sr-only text carries it for anyone not using a pointer. */
 function OutcomeCell({ outcome }) {
   const meta = OUTCOME_META[outcome];
   const Icon = meta.icon;
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <Icon
-        size={15}
-        aria-hidden="true"
-        className={
-          meta.tone === 'positive'
-            ? 'text-positive'
-            : meta.tone === 'negative'
-              ? 'text-negative'
-              : 'text-accent'
-        }
-      />
-      <span className="sr-only">{meta.label}</span>
-    </span>
+    <Tooltip label={glossaryHint(meta.label) ?? meta.label}>
+      <span tabIndex={0} className="inline-flex cursor-help items-center gap-1.5">
+        <Icon
+          size={15}
+          aria-hidden="true"
+          className={
+            meta.tone === 'positive'
+              ? 'text-positive'
+              : meta.tone === 'negative'
+                ? 'text-negative'
+                : 'text-accent'
+          }
+        />
+        <span className="sr-only">{meta.label}</span>
+      </span>
+    </Tooltip>
   );
 }
 
@@ -120,6 +126,7 @@ export function Chargebacks() {
     {
       key: 'outcome',
       header: 'Outcome',
+      hint: 'How the issuer decided, once they have. Cases in progress carry no decision yet.',
       width: 84,
       align: 'center',
       render: (row) => <OutcomeCell outcome={row.outcome} />,
@@ -136,13 +143,25 @@ export function Chargebacks() {
     {
       key: 'cardBrand',
       header: 'Card',
+      hint: 'The scheme the disputed card belongs to — each one has its own reason codes and deadlines.',
       render: (row) => (
         <Badge tone="info" className="normal-case tracking-normal">
           {row.cardBrand}
         </Badge>
       ),
     },
-    { key: 'reasonCode', header: 'Reason' },
+    {
+      key: 'reasonCode',
+      header: 'Reason',
+      hint: 'The scheme’s code for why the cardholder disputed. Hover a code for its meaning.',
+      render: (row) => (
+        <Tooltip label={`${row.reasonLabel} · ${row.reasonCategory}`}>
+          <span tabIndex={0} className="cursor-help underline decoration-dotted underline-offset-2">
+            {row.reasonCode}
+          </span>
+        </Tooltip>
+      ),
+    },
     { key: 'postDate', header: 'Post date', render: (row) => formatDate(row.postDate) },
     {
       key: 'disputeAmount',
@@ -184,7 +203,9 @@ export function Chargebacks() {
 
       {awaiting > 0 ? (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-cf border border-caution/40 bg-accent-soft/50 px-3 py-2">
-          <Shield size={15} className="text-ink-muted" aria-hidden="true" />
+          <Shield size={15} className="text-ink-muted" aria-hidden="true">
+            <title>Cases awaiting evidence</title>
+          </Shield>
           <p className="text-cf-body text-ink">
             <strong className="font-semibold">{awaiting}</strong>{' '}
             {awaiting === 1 ? 'case is' : 'cases are'} still waiting on evidence from you. Open one

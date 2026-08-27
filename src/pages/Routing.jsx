@@ -119,7 +119,11 @@ function CascadeLadder() {
 
             {index < cascadeLadder.length - 1 ? (
               <div className="flex justify-center py-0.5 text-ink-subtle">
-                <ArrowDown size={14} aria-hidden="true" />
+                <Tooltip label="Whatever this step did not clear falls through to the next one">
+                  <span tabIndex={0} className="cursor-help">
+                    <ArrowDown size={14} aria-hidden="true" />
+                  </span>
+                </Tooltip>
               </div>
             ) : null}
           </li>
