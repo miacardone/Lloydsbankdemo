@@ -5,6 +5,7 @@ import { DataTable } from '@/components/table/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import { Button, IconButton } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { Input, Select, Toggle } from '@/components/ui/Field';
 import { useToast } from '@/components/ui/Toast';
 import { downloadCsv } from '@/lib/csv';
@@ -112,8 +113,8 @@ export function MidManagement() {
     setBulkOpen(false);
     notify(
       bulkFile
-        ? `${bulkFile} queued for ${merchant.name}. We will email you when the import finishes.`
-        : `Nothing to upload — choose a CSV first.`,
+        ? `${bulkFile.name} queued for ${merchant.name}. We will email you when the import finishes.`
+        : 'Nothing to upload — choose a CSV first.',
       bulkFile ? {} : { tone: 'info' },
     );
     setBulkFile(null);
@@ -349,19 +350,15 @@ export function MidManagement() {
             value={bulkMerchant}
             onChange={(event) => setBulkMerchant(event.target.value)}
           />
-          <div className="rounded-cf border border-dashed border-lineStrong p-6 text-center">
-            <p className="text-cf-body text-ink-muted">Drop a CSV here, or choose a file.</p>
-            <input
-              type="file"
-              accept=".csv"
-              aria-label="MID upload file"
-              onChange={(event) => setBulkFile(event.target.files?.[0]?.name ?? null)}
-              className="mt-3 w-full text-cf-body file:mr-3 file:rounded-cf file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-cf-body file:font-semibold file:text-brand-contrast"
-            />
-            {bulkFile ? (
-              <p className="mt-2 text-[0.75rem] text-ink-muted">Ready to upload: {bulkFile}</p>
-            ) : null}
-          </div>
+          <Dropzone
+            label="MID file"
+            accept=".csv"
+            multiple={false}
+            files={bulkFile ? [bulkFile] : []}
+            onChange={(next) => setBulkFile(next[0] ?? null)}
+            emptyText="Drag a CSV here, or choose one from your computer."
+            hint="One MID per row, matching the template."
+          />
           <Button variant="ghost" size="sm" icon={Download} onClick={downloadMidTemplate}>
             Download template
           </Button>

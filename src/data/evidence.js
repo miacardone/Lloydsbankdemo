@@ -1,3 +1,5 @@
+import { formatCurrencyIn } from '@/lib/format';
+
 /**
  * What a merchant has to send back to win a dispute.
  *
@@ -173,7 +175,9 @@ export function daysUntil(deadline, today) {
  * the actual reason code.
  */
 export function draftRebuttal(dispute) {
-  const opener = `We are contesting case ${dispute.caseNumber} for ${dispute.merchantName}, a ${dispute.currency} ${dispute.disputeAmount} charge taken on ${dispute.transDate} under reason code ${dispute.reasonCode} (${dispute.reasonLabel}).`;
+  /* Formatted, not raw: this line ends up on the document the issuer reads. */
+  const amount = formatCurrencyIn(dispute.disputeAmount, dispute.currency);
+  const opener = `We are contesting case ${dispute.caseNumber} for ${dispute.merchantName}, a ${amount} charge taken on ${dispute.transDate} under reason code ${dispute.reasonCode} (${dispute.reasonLabel}).`;
 
   const argument =
     {

@@ -100,6 +100,20 @@ export const formatMonth = (value) => {
   return date.toLocaleDateString(LOCALE, { month: 'short', year: '2-digit', timeZone: 'UTC' });
 };
 
+/** "2.4 MB" reads better than a byte count nobody converts in their head. */
+export const formatBytes = (bytes) => {
+  if (!Number.isFinite(bytes)) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ['KB', 'MB', 'GB'];
+  let value = bytes / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[unit]}`;
+};
+
 /** Masks all but the last four of a card number for display. */
 export const maskCard = (last4) => `•••• ${String(last4).padStart(4, '0')}`;
 

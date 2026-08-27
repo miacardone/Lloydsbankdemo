@@ -11,6 +11,8 @@ import {
   RepresentmentModal,
   SubmittedRepresentment,
 } from '@/components/chargebacks/Representment';
+import { useToast } from '@/components/ui/Toast';
+import { useBrand } from '@/hooks/useBrand';
 import { useTableState } from '@/hooks/useTableState';
 import { chargebacks } from '@/data/chargebacks';
 import { daysUntil, responseDeadline } from '@/data/evidence';
@@ -67,6 +69,8 @@ const RESPONSE_META = {
 };
 
 export function Chargebacks() {
+  const { brand } = useBrand();
+  const { notify } = useToast();
   const [selected, setSelected] = useState(null);
   const [defending, setDefending] = useState(null);
   /* Cases live in state so defending one is visible everywhere it should be —
@@ -86,6 +90,7 @@ export function Chargebacks() {
         ? { ...current, defended: true, representment: bundle }
         : current,
     );
+    notify('Representment submitted. Download the case file to send it on.');
   };
 
   const withdrawRepresentment = (caseNumber) => {
@@ -263,9 +268,11 @@ export function Chargebacks() {
 
       <CaseDetail
         case_={defending ? null : selected}
+        brand={brand}
         onClose={() => setSelected(null)}
         onDefend={() => setDefending(selected)}
         onWithdraw={() => withdrawRepresentment(selected.caseNumber)}
+        onNotify={notify}
       />
 
       <RepresentmentModal
@@ -279,7 +286,7 @@ export function Chargebacks() {
   );
 }
 
-function CaseDetail({ case_, onClose, onDefend, onWithdraw }) {
+function CaseDetail({ case_, brand, onClose, onDefend, onWithdraw, onNotify }) {
   if (!case_) return null;
 
   const state = responseState(case_);
@@ -322,7 +329,13 @@ function CaseDetail({ case_, onClose, onDefend, onWithdraw }) {
       <div className="space-y-4">
         {state === 'submitted' ? (
           case_.representment ? (
-            <SubmittedRepresentment representment={case_.representment} onWithdraw={onWithdraw} />
+            <SubmittedRepresentment
+              dispute={case_}
+              representment={case_.representment}
+              brand={brand}
+              onWithdraw={onWithdraw}
+              onNotify={onNotify}
+            />
           ) : (
             <p className="rounded-cf border border-positive/40 bg-positive/5 p-3 text-cf-body text-ink">
               A representment was already filed on this case. Revise the evidence to send the issuer

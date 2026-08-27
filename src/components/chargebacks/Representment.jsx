@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, Check, FileText, Paperclip, Shield, X } from 'lucide-react';
+import { AlertTriangle, Check, FileText, Package, Printer, Shield, X } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { Dropzone } from '@/components/ui/Dropzone';
 import { Textarea } from '@/components/ui/Field';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { daysUntil, draftRebuttal, evidenceFor, responseDeadline } from '@/data/evidence';
 import { TODAY } from '@/data/seed';
-import { formatCurrencyIn, formatDate } from '@/lib/format';
+import { downloadCaseBundle, printCaseFile } from '@/lib/caseFile';
+import { formatBytes, formatCurrencyIn, formatDate } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
 /** The countdown that decides whether a case is worth working today. */
@@ -76,14 +78,19 @@ export function RepresentmentModal({ open, dispute, onClose, onSubmit }) {
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
 
-  const ready = selected.length > 0 && narrative.trim().length > 40;
+  /* Two ways to answer a chargeback, and both are legitimate: build the case
+     here from the checklist, or attach one you compiled yourself. Requiring the
+     checklist from someone who already has a finished representment is busywork
+     that costs them time they may not have on the clock. */
+  const ready = (selected.length > 0 || files.length > 0) && narrative.trim().length > 40;
 
   const submit = () => {
     onSubmit({
       caseNumber: dispute.caseNumber,
       evidence: selected.map((id) => checklist.find((item) => item.id === id)?.label ?? id),
       narrative: narrative.trim(),
-      attachments: files,
+      attachments: files.map((file) => file.name),
+      files,
       submittedAt: formatDate(TODAY),
       deadline,
     });
@@ -109,7 +116,7 @@ export function RepresentmentModal({ open, dispute, onClose, onSubmit }) {
             label={
               ready
                 ? null
-                : 'Attach at least one piece of evidence and write a rebuttal before submitting.'
+                : 'Tick an evidence item or attach a file, and leave a rebuttal, before submitting.'
             }
           >
             <span>
@@ -149,12 +156,13 @@ export function RepresentmentModal({ open, dispute, onClose, onSubmit }) {
           <h3 className="text-cf-body font-bold text-ink">
             Evidence for this reason code
             <span className="ml-2 font-normal text-ink-subtle">
-              {selected.length} of {checklist.length} attached
+              {selected.length} of {checklist.length} selected
             </span>
           </h3>
           <p className="mb-2 mt-0.5 text-[0.75rem] text-ink-muted">
             Issuers weigh these specific artifacts for {dispute.reasonCategory.toLowerCase()}{' '}
-            disputes. Everything you can supply raises the odds.
+            disputes. Everything you can supply raises the odds — or skip straight to attaching a
+            representment you have already put together.
           </p>
 
           <ul className="space-y-1.5">
@@ -215,44 +223,53 @@ export function RepresentmentModal({ open, dispute, onClose, onSubmit }) {
         </section>
 
         <section>
-          <label
-            htmlFor="representment-files"
-            className="block text-cf-label uppercase text-ink-muted"
-          >
-            Attachments
-          </label>
-          <input
-            id="representment-files"
-            type="file"
-            multiple
-            onChange={(event) =>
-              setFiles(Array.from(event.target.files ?? []).map((file) => file.name))
-            }
-            className="mt-1.5 w-full text-cf-body file:mr-3 file:rounded-cf file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-cf-body file:font-semibold file:text-brand-contrast"
+          <Dropzone
+            label="Attachments"
+            files={files}
+            onChange={setFiles}
+            hint="Already have a representment PDF? Attach it and send — the checklist above is optional."
+            emptyText="Drag your evidence here, or choose files from your computer."
           />
-          {files.length ? (
-            <ul className="mt-2 space-y-1">
-              {files.map((name) => (
-                <li key={name} className="flex items-center gap-1.5 text-[0.75rem] text-ink-muted">
-                  <Paperclip size={12} aria-hidden="true" />
-                  {name}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-1 text-[0.75rem] text-ink-subtle">
-              Nothing attached yet. Files stay in your browser in this demo.
-            </p>
-          )}
+          <p className="mt-1.5 text-[0.75rem] text-ink-subtle">
+            Files stay in your browser in this demo — nothing is uploaded anywhere.
+          </p>
         </section>
       </div>
     </Modal>
   );
 }
 
-/** What a case looks like once the merchant has answered it. */
-export function SubmittedRepresentment({ representment, onWithdraw }) {
+/**
+ * What a case looks like once the merchant has answered it.
+ *
+ * The two buttons are the payoff for filling the checklist in: the pack is
+ * assembled here rather than left as a list of things the merchant still has to
+ * collate into an email.
+ */
+export function SubmittedRepresentment({ dispute, representment, brand, onWithdraw, onNotify }) {
+  const [zipping, setZipping] = useState(false);
   if (!representment) return null;
+
+  const bundle = async () => {
+    setZipping(true);
+    try {
+      const name = await downloadCaseBundle(dispute, representment, brand);
+      onNotify?.(`${name} downloaded — cover sheet, rebuttal, manifest and evidence.`);
+    } catch (error) {
+      onNotify?.(`Could not build the bundle: ${error.message}`, { tone: 'info' });
+    } finally {
+      setZipping(false);
+    }
+  };
+
+  const print = () => {
+    if (!printCaseFile(dispute, representment, brand)) {
+      onNotify?.('Your browser blocked the print window — allow pop-ups for this site.', {
+        tone: 'info',
+      });
+    }
+  };
+
   return (
     <div className="rounded-cf border border-positive/40 bg-positive/5 p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -267,23 +284,49 @@ export function SubmittedRepresentment({ representment, onWithdraw }) {
         ) : null}
       </div>
 
-      <p className="mt-2 text-cf-label uppercase text-ink-muted">Evidence sent</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Tooltip label="Cover sheet, rebuttal, manifest and every attached file, in one zip">
+          <Button variant="secondary" size="sm" icon={Package} disabled={zipping} onClick={bundle}>
+            {zipping ? 'Building…' : 'Download case file'}
+          </Button>
+        </Tooltip>
+        <Tooltip label="Opens the cover sheet on its own so you can print or save it as PDF">
+          <Button variant="ghost" size="sm" icon={Printer} onClick={print}>
+            Print cover sheet
+          </Button>
+        </Tooltip>
+      </div>
+
+      <p className="mt-3 text-cf-label uppercase text-ink-muted">Evidence sent</p>
       <ul className="mt-1 flex flex-wrap gap-1.5">
-        {representment.evidence.map((item) => (
-          <li key={item}>
-            <Badge tone="positive" className="normal-case tracking-normal">
-              {item}
-            </Badge>
+        {representment.evidence.length ? (
+          representment.evidence.map((item) => (
+            <li key={item}>
+              <Badge tone="positive" className="normal-case tracking-normal">
+                {item}
+              </Badge>
+            </li>
+          ))
+        ) : (
+          <li className="text-[0.75rem] text-ink-subtle">
+            Answered with attachments rather than the checklist.
           </li>
-        ))}
+        )}
       </ul>
 
-      {representment.attachments?.length ? (
-        <p className="mt-2 text-[0.75rem] text-ink-muted">
-          {representment.attachments.length} file
-          {representment.attachments.length > 1 ? 's' : ''} attached ·{' '}
-          {representment.attachments.join(', ')}
-        </p>
+      {representment.files?.length ? (
+        <ul className="mt-2 space-y-0.5">
+          {representment.files.map((file, index) => (
+            <li
+              key={`${file.name}:${file.size}`}
+              className="flex items-center gap-1.5 text-[0.75rem] text-ink-muted"
+            >
+              <span className="font-bold text-positive">{String.fromCharCode(65 + index)}</span>
+              <span className="min-w-0 flex-1 truncate">{file.name}</span>
+              <span className="tabular-nums">{formatBytes(file.size)}</span>
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       <p className="mt-2 whitespace-pre-line border-t border-positive/25 pt-2 text-[0.75rem] text-ink-muted">
